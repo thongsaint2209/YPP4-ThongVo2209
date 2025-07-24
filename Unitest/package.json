@@ -1,0 +1,13 @@
+{
+  "name": "unitest",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "h.js",
+  "scripts": {
+    "start": "ts-node --loader ts-node/esm h.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
