@@ -63,11 +63,32 @@ FROM Boards b
 WHERE b.Name LIKE '%An%';
 
 -- Setting
--- Q11: Get setting workspacevisibility(value=22)
+-- Q11: Get setting workspace visibility(value=22)
+SELECT svk.KeyName, so.DisplayValue
+FROM 
+    (SELECT sv.Value, sk.KeyName
+    FROM SettingValues sv
+    JOIN SettingKeys sk ON sv.SettingKeyId = sk.id
+    JOIN OwnerTypes ot ON ot.Id = sk.OwnerTypeId
+    WHERE ot.Value = 'Workspace' AND sk.KeyName = 'workspacevisibility') AS svk
+JOIN SettingOptions so ON so.id = svk.Value
+
+-- Setting
+-- Get all setting keys of user
+SELECT sk.KeyName
+FROM SettingKeys sk 
+JOIN OwnerTypes ot ON ot.Id = sk.OwnerTypeId
+WHERE ot.Value = 'User' 
+
+-- Get all setting keys of user with option value(id=1)
 SELECT *
-FROM SettingValues sv
-JOIN SettingKeys sk ON sv.SettingKeyId = sk.id
-WHERE sk.OwnerTypeId = 1 AND sv.OwnerId = 1 AND sk.KeyName = 'workspacevisibility' 
+FROM 
+        (SELECT sk.KeyName, sv.OwnerId, sk.OwnerTypeId,sv.Value
+FROM SettingKeys sk 
+LEFT JOIN SettingValues sv ON sk.Id = sv.SettingKeyId) AS sbk
+ JOIN OwnerTypes ot ON ot.Id = sbk.OwnerTypeId
+    WHERE ot.Value = 'User' AND sbk.OwnerId = 1
+
 
 -- Member
 -- Q12: Get all the members of workkspace(id=13) and with permission
@@ -91,27 +112,6 @@ WITH GetShareLinksMember AS
 SELECT u.Username
 FROM GetShareLinksMember gslm
 JOIN Users u ON u.Id = gslm.UserId
-
--- Setting
--- Q14: Get all setting of workspace(id=2)
-SELECT sk.KeyName, sk.DefaultValue
-FROM SettingKeys sk
-JOIN SettingValues sv ON sv.SettingKeyId = sk.Id
-WHERE sk.OwnerTypeId = 1 AND sv.OwnerId = 2
-
--- Setting
--- Q15: Get all setting of user(id=1)
-SELECT sk.KeyName, sk.DefaultValue
-FROM SettingKeys sk
-JOIN SettingValues sv ON sv.SettingKeyId = sk.Id
-WHERE sk.OwnerTypeId = 4 AND sv.OwnerId = 1
-
--- Setting
--- Q16: Get all setting of board(id=5)
-SELECT sk.KeyName, sk.DefaultValue
-FROM SettingKeys sk
-JOIN SettingValues sv ON sv.SettingKeyId = sk.Id
-WHERE sk.OwnerTypeId = 2 AND sv.OwnerId = 5
 
 -- Q17: Get name all power up of board(id=2)
 SELECT puc.Name
