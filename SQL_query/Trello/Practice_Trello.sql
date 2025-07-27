@@ -1,48 +1,72 @@
 ﻿-- Homepage
 -- Homepage: recently viewed boards
--- Q1: Get recently viewed boards by the current user ?
+-- Q1: Get 4 recently viewed boards by user(id=1)
+SELECT TOP 4 b.Id, b.Name, b.BackgroundUrl
+FROM Boards b
+JOIN BoardUsers bu ON bu.BoardId = b.Id
+JOIN Users u ON u.Id = bu.UserId
+WHERE bu.UserId = 1
+ORDER BY bu.AccessedAt DESC;
+
+-- Homepage: Workspace, Member
+-- Q2: Get all workspace that User(id=1) is member
+SELECT w.Name
+FROM Workspaces w
+JOIN Members m ON m.OwnerId = w.Id
+JOIN OwnerTypes ot ON m.OwnerTypeId = ot.Id
+JOIN Users u ON u.Id = m.UserId
+WHERE ot.Value = 'Workspace' AND u.Id = 1;
+
+-- Q3: Get list all board that User(i=1) is Member for each Workspace
+SELECT
+    w.Id AS WorkspaceId,
+    w.Name AS WorkspaceName,
+    b.Name AS BoardName,
+    b.BackgroundUrl
+FROM Boards b
+JOIN Members m ON m.OwnerId = b.Id
+JOIN OwnerTypes ot ON ot.Id = m.OwnerTypeId 
+JOIN Workspaces w ON b.WorkspaceId = w.Id
+JOIN Users u ON m.UserId = u.Id
+WHERE u.Id = 1 AND ot.Value = 'Board'
+
+-- Homepage: Board Starred
+-- Q4: Get the all starred boards by the user(id=8).
 SELECT b.Id, b.Name
 FROM Boards b
 JOIN BoardUsers bu ON bu.BoardId = b.Id
-WHERE bu.UserId = 1 
-
--- Homepage: BoardStarred
--- Q2: Count how many stared boards the current user has.
-SELECT COUNT(*) AS StaredBoardCount
-FROM Boards b
-JOIN BoardUsers bu ON bu.BoardId = b.Id
-WHERE bu.UserId = 1 AND b.IsStar = 1;
-
--- Homepage: Board Starred
--- Q3: Get the all starred boards by the user.
-SELECT b.Id, b.Name, bu.AccessedAt
-FROM Boards b
-JOIN BoardUsers bu ON bu.BoardId = b.Id
-WHERE bu.UserId = 8 AND b.IsStar = 1
-
--- Homepage: Workspaces
--- Q4: Get all workspaces the user(id=1) is a member of.
-SELECT *
-FROM Workspaces w
-JOIN Members m ON m.OwnerId = w.Id
-WHERE m.OwnerTypeId = 1 AND m.UserId = 1 
-
--- Homepage: Board, Workspace
--- Q5: Get all boards of workspaces(id=738) the user(id=1) is a member of.
-SELECT *
-FROM Boards b
-JOIN Members m ON m.OwnerId = b.Id
-WHERE m.UserId = 1 AND b.WorkspaceId = 738 AND m.OwnerTypeId = 2
+JOIN Users u ON bu.UserId = u.Id
+WHERE u.Id = 8 AND b.IsStar = 1
 
 -- Template
 -- Q6: Get all template categories.
-SELECT Id, Name FROM TemplateCategories;
+SELECT TOP 7 Id, Name , IconUrl
+FROM TemplateCategories;
 
 -- Template
--- Q7: Get all templates in a specific category (e.g., 'Business').
+-- Q7: Get list templates in a specific category (e.g., 'VP Marketing').
+SELECT tc.Name, t.Title, t.Description, t.Copied, t.Viewed, t.BackgroundUrl
+FROM Templates t
+JOIN TemplateCategories tc ON tc.Id = t.TemplateCategoryId
+WHERE TC.Name ='VP Marketing'
+
+-- Q7: Get information templates(category = 'VP Marketing', id=22)
 SELECT t.Title, t.Description, t.Copied, t.Viewed, t.BackgroundUrl
 FROM Templates t
-ORDER BY Viewed DESC
+JOIN TemplateCategories tc ON tc.Id = t.TemplateCategoryId
+WHERE tc.Name ='VP Marketing' AND t.Id ='22'
+
+-- Q8: Get information templates from board (use templates)
+SELECT 
+    t.Title, 
+    t.Description,
+    t.Copied,
+    t.Viewed,
+    b.BackgroundUrl,
+    b.Name
+FROM Templates t
+    JOIN Boards b ON b.id = t.BoardId
+WHERE t.Id = 1;
 
 --Template
 -- Q8: Get top 5 most viewed templates.
@@ -63,15 +87,27 @@ FROM Boards b
 WHERE b.Name LIKE '%An%';
 
 -- Setting
--- Q11: Get setting workspace visibility(value=22)
-SELECT svk.KeyName, so.DisplayValue
-FROM 
-    (SELECT sv.Value, sk.KeyName
-    FROM SettingValues sv
-    JOIN SettingKeys sk ON sv.SettingKeyId = sk.id
-    JOIN OwnerTypes ot ON ot.Id = sk.OwnerTypeId
-    WHERE ot.Value = 'Workspace' AND sk.KeyName = 'workspacevisibility') AS svk
-JOIN SettingOptions so ON so.id = svk.Value
+-- Q11: Get setting workspace(id=1001) visibility(value=22, user=200)
+SELECT w.Name, sk.KeyName, so.DisplayValue
+FROM SettingKeys sk
+JOIN SettingValues sv ON sv.SettingKeyId = sk.Id
+JOIN OwnerTypes ot ON ot.Id = sk.OwnerTypeId
+JOIN SettingOptions so ON so.Id = sv.Value
+JOIN Workspaces w ON w.Id = sv.OwnerId
+JOIN Users u ON u.Id = w.CreatedBy
+WHERE ot.Value = 'Workspace' AND sk.KeyName = 'workspacevisibility' AND u.Id = 200 AND  w.Id = 1001;
+
+-- Q12: Get top 4 suggested Boards Template for each Teamplate category have highest view
+SELECT  
+  TOP 4 
+    b.Name,
+    b.BackgroundUrl
+FROM Boards b
+    JOIN Templates t ON t.BoardId = b.Id
+    JOIN TemplateCategories tc ON t.TemplateCategoryId = tc.Id
+WHERE tc.Name = 'Financial Analyst'
+ORDER BY 
+    t.Viewed DESC
 
 -- Setting
 -- Get all setting keys of user
@@ -84,11 +120,23 @@ WHERE ot.Value = 'User'
 SELECT *
 FROM 
         (SELECT sk.KeyName, sv.OwnerId, sk.OwnerTypeId,sv.Value
-FROM SettingKeys sk 
-LEFT JOIN SettingValues sv ON sk.Id = sv.SettingKeyId) AS sbk
- JOIN OwnerTypes ot ON ot.Id = sbk.OwnerTypeId
-    WHERE ot.Value = 'User' AND sbk.OwnerId = 1
+         FROM SettingKeys sk 
+         LEFT JOIN SettingValues sv ON sk.Id = sv.SettingKeyId) AS sbk
+         JOIN OwnerTypes ot ON ot.Id = sbk.OwnerTypeId
+         WHERE ot.Value = 'User' AND sbk.OwnerId = 1
 
+
+SELECT
+    sk.KeyName,
+    sv.Value AS SettingValueId,
+    so.DisplayValue AS SettingOption
+FROM 
+ SettingValues sv
+JOIN SettingKeys sk ON sv.SettingKeyId = sk.Id
+JOIN OwnerTypes ot ON sk.OwnerTypeId = ot.Id
+JOIN SettingOptions so ON so.Id = sv.Value
+WHERE ot.Value = 'User'
+ORDER BY sk.KeyName;
 
 -- Member
 -- Q12: Get all the members of workkspace(id=13) and with permission
@@ -135,11 +183,29 @@ FROM Members AS m
 JOIN Boards b ON m.OwnerId = b.Id
 WHERE m.OwnerTypeId = 2 AND b.Id=1
 
--- Q21: Get all card of stage (id=1)
+-- Q21: Get all card of stage(id=1)
 SELECT c.Title, c.Description, s.Title AS StageName
 FROM Cards c
 JOIN Stages s ON c.StageId = s.Id
 WHERE s.Id = 1;
+
+-- Q21: Get all Stage of board(id=1)
+SELECT s.Id AS StageId, s.Title AS StageTitle, s.Position
+FROM Stages s
+JOIN Boards b ON b.Id = s.BoardId
+WHERE b.Id = 1
+ORDER BY s.Position;
+
+-- Q21: Get Cards's Stage at position 3rd of board(id=1)
+SELECT *
+FROM Cards as c
+JOIN Stages as s ON s.Id = c.StageId
+WHERE s.Position= 3
+SELECT s.Id AS StageId, s.Title AS StageTitle, s.Position
+FROM Stages s
+JOIN Boards b ON b.Id = s.BoardId
+WHERE b.Id = 1 AND s.Position= 3
+
 
 -- Q22: Count card of stage(id=1)
 SELECT s.Title AS StageName, COUNT(*) AS CardCount
