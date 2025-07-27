@@ -109,37 +109,17 @@ WHERE tc.Name = 'Financial Analyst'
 ORDER BY 
     t.Viewed DESC
 
--- Setting
--- Get all setting keys of user
-SELECT sk.KeyName
-FROM SettingKeys sk 
-JOIN OwnerTypes ot ON ot.Id = sk.OwnerTypeId
-WHERE ot.Value = 'User' 
-
--- Get all setting keys of user with option value(id=1)
-SELECT *
-FROM 
-        (SELECT sk.KeyName, sv.OwnerId, sk.OwnerTypeId,sv.Value
-         FROM SettingKeys sk 
-         LEFT JOIN SettingValues sv ON sk.Id = sv.SettingKeyId) AS sbk
-         JOIN OwnerTypes ot ON ot.Id = sbk.OwnerTypeId
-         WHERE ot.Value = 'User' AND sbk.OwnerId = 1
-
-
-SELECT
-    sk.KeyName,
-    sv.Value AS SettingValueId,
-    so.DisplayValue AS SettingOption
-FROM 
- SettingValues sv
-JOIN SettingKeys sk ON sv.SettingKeyId = sk.Id
-JOIN OwnerTypes ot ON sk.OwnerTypeId = ot.Id
-JOIN SettingOptions so ON so.Id = sv.Value
-WHERE ot.Value = 'User'
-ORDER BY sk.KeyName;
+-- Q13: Get Boards that user(id=1) is a member in workspace(i=2)
+SELECT b.Name, b.BackgroundUrl
+FROM Boards b
+    JOIN Members m ON m.OwnerId = b.Id
+    JOIN OwnerTypes ot ON ot.Id = m.OwnerTypeId
+    JOIN Workspaces w ON w.Id = b.WorkspaceId
+    JOIN Users u ON u.Id = m.UserId
+WHERE ot.Value = 'Board' AND u.Id = 1 AND w.Id = 2
 
 -- Member
--- Q12: Get all the members of workkspace(id=13) and with permission
+-- Q14: Get all the members of workkspace(id=13) and with permission
 WITH GetUserPermission AS
     (SELECT m.UserId , m.PermissionId
     FROM Members m
@@ -151,44 +131,75 @@ JOIN GetUserPermission gup ON gup.UserId = u.Id
 JOIN Permissions p ON p.Id = gup.PermissionId
 
 -- Member,Sharelink
--- Q13: Get all members of the board with Sharelink(status=Active)
-WITH GetShareLinksMember AS 
-    (SELECT sl.OwnerId,sl.PermissionId, m.UserId
-    FROM ShareLinks sl
-    JOIN Members m ON m.OwnerId = sl.OwnerId
-    Where m.OwnerTypeId = 2 AND sl.OwnerTypeId = 2 AND  sl.Status ='Active')
-SELECT u.Username
-FROM GetShareLinksMember gslm
-JOIN Users u ON u.Id = gslm.UserId
+-- Q15. Get sharelink of workspace(id=9)
+SELECT sl.Token, sl.Status
+FROM ShareLinks sl
+    JOIN Workspaces w ON w.Id = sl.OwnerId
+    JOIN Permissions p ON sl.PermissionId = p.Id
+WHERE w.Id = 9;
 
--- Q17: Get name all power up of board(id=2)
-SELECT puc.Name
-FROM (SELECT pu.Id
-FROM PowerUps pu
-JOIN BoardPowerUps bu ON pu.Id = bu.PowerUpId
-JOIN Boards b ON b.Id = bu.BoardId
-WHERE bu.BoardId = 2) as p
-JOIN PowerUpCategories puc ON puc.Id = p.Id
+-- Q16: Get all members of the board(id=1) with permissions
+SELECT m.Id, u.Username,p.Name
+FROM Members m
+    JOIN Boards b ON b.Id = m.OwnerId
+    JOIN Permissions p ON p.Id = m.PermissionId
+    JOIN Users u ON u.Id = m.UserId
+WHERE b.Id = 1;
+
+-- Setting
+-- Q16: Get all setting keys of user
+SELECT sk.KeyName
+FROM SettingKeys sk 
+JOIN OwnerTypes ot ON ot.Id = sk.OwnerTypeId
+WHERE ot.Value = 'User' 
+
+-- Q17: Get all setting keys of user (id=1) with option value
+SELECT sk.KeyName, sv.Value AS SettingValueId, so.DisplayValue AS SettingOption, u.Id
+FROM SettingKeys sk
+JOIN SettingValues sv ON sv.SettingKeyId = sk.Id
+JOIN OwnerTypes ot ON sk.OwnerTypeId = ot.Id
+JOIN SettingOptions so ON so.Id = sv.Value
+JOIN Users u ON u.Id = sv.OwnerId 
+WHERE ot.Value = 'User' AND  u.Id = 1
+ORDER BY sk.KeyName;
+
+-- Q18: Get SettingKeys and SettingOptions of this SettingKeys  for Workspace
+SELECT sk.KeyName, so.DisplayValue
+FROM SettingKeys sk
+    JOIN SettingKeySettingOptions skso ON skso.SettingKeyId = sk.Id
+    JOIN SettingOptions so ON so.Id = skso.SettingOptionId
+    JOIN OwnerTypes ot ON ot.Id = sk.OwnerTypeId 
+    WHERE ot.Value = 'Workspace'
+GROUP BY sk.KeyName, so.DisplayValue
 
 -- Power up
--- Q18: Get name power up(category=2)
-SELECT *
+-- Q19:: Get name all power up of board(id=2)
+SELECT pu.Name, pu.BackgroundUrl , pu.IsStaffPick, pu.IsIntegration
+FROM PowerUps pu
+JOIN BoardPowerUps bu ON bu.PowerUpId = pu.Id
+JOIN Boards b ON b.Id = bu.BoardId
+JOIN PowerUpCategories puc ON pu.PowerUpCategoryId = puc.Id
+WHERE bu.BoardId = 2 AND pu.IsStaffPick = 1;
+
+-- Q20: Get detail information power up(category=2)
+SELECT pu.Name, pu.Description, pu.IconUrl, pu.AuthorName, pu.BackgroundUrl, puc.Name
 FROM PowerUps pu
 JOIN PowerUpCategories puc ON pu.PowerUpCategoryId = puc.Id
 WHERE puc.id = 2
 
--- Q20: Get all member of board (id=1)
+-- Q21: Get all member of board (id=1)
 SELECT b.Id, b.Name
 FROM Members AS m
 JOIN Boards b ON m.OwnerId = b.Id
 WHERE m.OwnerTypeId = 2 AND b.Id=1
 
--- Q21: Get all card of stage(id=1)
-SELECT c.Title, c.Description, s.Title AS StageName
-FROM Cards c
-JOIN Stages s ON c.StageId = s.Id
-WHERE s.Id = 1;
+-- Q22: Get Billing Plan
+SELECT DISTINCT bp.Name, bp.PricePerUser, bp.Type
+FROM BillingPlans bp
 
+-- Q23. Get Subscription of specific Workspace
+
+-- Board, Stage, Card
 -- Q21: Get all Stage of board(id=1)
 SELECT s.Id AS StageId, s.Title AS StageTitle, s.Position
 FROM Stages s
@@ -196,32 +207,46 @@ JOIN Boards b ON b.Id = s.BoardId
 WHERE b.Id = 1
 ORDER BY s.Position;
 
--- Q21: Get Cards's Stage at position 3rd of board(id=1)
-SELECT *
-FROM Cards as c
-JOIN Stages as s ON s.Id = c.StageId
-WHERE s.Position= 3
-SELECT s.Id AS StageId, s.Title AS StageTitle, s.Position
-FROM Stages s
-JOIN Boards b ON b.Id = s.BoardId
-WHERE b.Id = 1 AND s.Position= 3
+-- Q22: Get all card of stage(position=1) in board (id=1)
+SELECT c.Title, c.Description, c.CoverValue
+FROM Cards c
+JOIN Stages s ON c.StageId = s.Id
+JOIN Boards b ON s.BoardId = b.Id
+WHERE s.Position= 1 AND b.Id = 3;
 
+-- Q23: Get detail card(id=1) of stage(position=1) in board (id=1)
+SELECT c.Title, c.Description, c.CoverValue, c.DueDate, c.StartDate, c.Location
+FROM Cards c
+JOIN Stages s ON c.StageId = s.Id
+JOIN Boards b ON s.BoardId = b.Id
+WHERE s.Position= 1 AND b.Id = 3;
 
--- Q22: Count card of stage(id=1)
+-- Q24: Get members are assiged in card(id=1) of stage(position=1) in board (id=1)
+SELECT u.Username, u.PictureUrl
+FROM Members m
+JOIN CardAssignMembers cam ON cam.MemberId = m.Id
+JOIN Cards c ON c.Id = cam.CardId
+JOIN Stages s ON c.StageId = s.Id
+JOIN OwnerTypes ot ON ot.Id = m.OwnerTypeId
+JOIN Boards b ON s.BoardId = b.Id
+JOIN Users u ON u.Id = m.UserId
+WHERE s.Position= 1 AND b.Id = 1 AND ot.Value = 'Board' AND c.Id = 1;
+
+-- Q25: Count card of stage(id=1)
 SELECT s.Title AS StageName, COUNT(*) AS CardCount
 FROM Stages s
 JOIN Cards c ON s.Id = c.StageId
 WHERE s.Id = 1
 GROUP BY s.Title;
 
--- Q23: Count board user create by and sort desc 
+-- Q26: Count board user create by and sort desc 
 SELECT u.Username, COUNT(*) AS BoardCount
 FROM Users u
 JOIN Boards b ON u.Id = b.CreatedBy
 GROUP BY u.Username
 ORDER BY BoardCount DESC
 
--- Q24: Get comment lastest each card
+-- Q27: Get comment lastest each card
 SELECT c.CardId, ca.Title AS CardTitle, c.Content, c.CreatedAt
 FROM Comments c
 JOIN Cards ca ON ca.Id = c.CardId
@@ -231,12 +256,12 @@ WHERE c.CreatedAt = (
     WHERE c2.CardId = c.CardId
 );
 
--- Q25: Get boards are created 7 days lastest
+-- Q28: Get boards are created 7 days lastest
 SELECT Name, CreatedAt
 FROM Boards
 WHERE CreatedAt >= DATEADD(DAY, -7, GETDATE());
 
--- Q26: Get all cards are created on current month, year
+-- Q29: Get all cards are created on current month, year
 SELECT *
 FROM Cards
 WHERE MONTH(CreatedAt) = MONTH(GETDATE())
