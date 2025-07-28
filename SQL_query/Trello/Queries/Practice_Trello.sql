@@ -161,7 +161,7 @@ JOIN Users u ON u.Id = sv.OwnerId
 WHERE ot.[Value] = 'User' AND  u.Id = 1
 ORDER BY sk.KeyName;
 
--- Get SettingKeys and SettingOptions of this SettingKeys  for Workspace
+-- Get SettingKeys and SettingOptions of this SettingKeys  for Workspace (Slide 17)
 SELECT sk.KeyName, so.DisplayValue
 FROM SettingKeys sk
     JOIN SettingKeySettingOptions skso ON skso.SettingKeyId = sk.Id
@@ -303,6 +303,23 @@ JOIN Cards c ON c.Id = a.OwnerId
 JOIN Users u ON u.Id = a.UserId
 WHERE ot.Value = 'Card' AND c.Id = 12;
 
+-- Get list Photo Uplash of card(id=12) (Slide 37)
+SELECT c.CoverValue
+FROM Cards c
+JOIN Stages s ON s.Id = c.StageId
+JOIN Boards b ON b.Id = s.BoardId
+WHERE c.CoverType = 'UNSPLASH' AND b.Id = 11 AND c.Id = 2 AND c.Position = 2
+
+-- Get color of card(id=12) (Slide 37)
+SELECT c.[Name], c.Icon
+FROM Colors c
+
+-- Get label of card(id=12) (Slide 37)
+SELECT l.Title, c.[Name]
+FROM Labels l
+JOIN Colors c ON c.Id = l.ColorId
+
+
 -- list all checklist items assigned to the user with status set to false (incomplete). (Slide 40)
 SELECT 
     cli.[Name] , 
@@ -319,30 +336,36 @@ JOIN Members me ON me.Id = cli.MemberId
 JOIN Users us ON us.Id = me.UserId
 WHERE cli.[Status] = 0 AND me.UserId = 1
 
--- Count card of stage(id=1)
-SELECT s.Title AS StageName, COUNT(*) AS CardCount
-FROM Stages s
-JOIN Cards c ON s.Id = c.StageId
-WHERE s.Id = 1
-GROUP BY s.Title;
-
 -- Get attachments of card (id = 1) (Slide 42)
 SELECT a.[Name], a.Link ,a.UploadAt
 FROM Attachments a
 JOIN Cards c ON c.Id = a.CardId
-WHERE c.Id = 42
+WHERE c.Id = 42 AND a.FileType IS NULL
 
--- Get comment lastest of card (id = 1) (Slide 43)
+
+-- Get comment of card (id = 1) (Slide 43)
 SELECT c.CardId, ca.Title AS CardTitle, c.Content, c.CreatedAt
 FROM Comments c
 JOIN Cards ca ON ca.Id = c.CardId
-WHERE c.CreatedAt = (
-    SELECT MAX(c2.CreatedAt)
-    FROM Comments c2
-    WHERE c2.CardId = c.CardId
-) AND ca.Id = 1
+JOIN Stages s ON s.Id = ca.StageId
+JOIN Boards b ON b.Id = s.BoardId 
+WHERE ca.Id = 1 AND s.Id = 35 AND b.Id = 35
 
--- Show Activities unread notifications of the user. (Slide 55)
+-- Get reaction of comment's card (id = 1) (Slide 43)
+SELECT r.Icon, c.CardId
+FROM Reactions r
+JOIN CommentReactions cr ON cr.ReactionId = r.Id
+JOIN Comments c ON c.Id = cr.CommentId
+JOIN Cards ca ON ca.Id = c.CardId
+WHERE ca.Id = 337 
+
+-- Get list boards in collection (id = 1) (Slide 52)
+SELECT b.[Name], b.BackgroundUrl
+FROM Boards b
+JOIN BoardCollections bc ON bc.BoardId = b.Id
+
+
+-- Show Activities unread notifications of the user. (Slide 54)
 SELECT u.Username, u.PictureUrl, a.[Description], a.CreatedAt
 FROM Activities a
 JOIN Notifications n ON a.Id = n.ActivityId
