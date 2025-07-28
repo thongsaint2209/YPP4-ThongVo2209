@@ -252,13 +252,48 @@ JOIN Boards b ON s.BoardId = b.Id
 WHERE s.Position= 1 AND b.Id = 3;
 
 
--- Get members are assiged in card(id=1) (Slide 33)
-SELECT u.Username, u.PictureUrl
+-- Get members in card(id=1) (Slide 33)
+SELECT u.Id, u.PictureUrl, c.Id
 FROM Members m
 JOIN OwnerTypes ot ON ot.Id = m.OwnerTypeId
 JOIN Cards c ON c.Id = m.OwnerId
 JOIN Users u ON u.Id = m.UserId
-WHERE ot.Value = 'Card' AND c.Id = 1;
+WHERE ot.Value = 'Card' AND c.Id = 4;
+
+-- Get information card (id=1) of a stage(id=2), board(id=2) (Slide 34)
+WITH CountAttachmentCard AS (
+    SELECT CardId, COUNT(*) AS number_of_attachment
+    FROM Attachments
+    GROUP BY CardId
+),
+CountChecklistItem AS (
+    SELECT cl.CardId, COUNT(*) AS number_of_checklist_item
+    FROM CheckLists cl
+    JOIN CheckListItems cli ON cli.CheckListId = cl.Id
+    GROUP BY cl.CardId
+)
+SELECT c.Id, c.Title, c.[Location], c.StartDate, c.DueDate, c.Position,
+    ISNULL(cac.number_of_attachment, 0) AS number_of_attachment,
+    ISNULL(ccl.number_of_checklist_item, 0) AS number_of_checklist_item
+FROM Cards c
+LEFT JOIN CountAttachmentCard cac ON cac.CardId = c.Id
+LEFT JOIN CountChecklistItem ccl ON ccl.CardId = c.Id
+JOIN Stages s ON s.Id = c.StageId
+JOIN Boards b ON b.Id = s.BoardId
+WHERE s.Id = 2 AND b.Id = 2;
+
+--JOIN Members m ON m.OwnerId = c.Id
+--JOIN OwnerTypes ot ON ot.Id = m.OwnerTypeId 
+
+-- Get labels of card(id=39) (Slide 35)
+SELECT l.Title, col.[Name]
+FROM Labels l
+JOIN CardLabels cl ON cl.LabelId = l.Id
+JOIN Cards c ON c.Id = cl.CardId
+JOIN Colors col ON col.Id = l.ColorId
+JOIN Stages s ON s.Id =c.StageId
+JOIN Boards b ON b.Id = s.BoardId
+WHERE b.Id = 1 AND s.Id = 1 AND c.Id = 39;
 
 -- Get activities of card(id=12) (Slide 36)
 SELECT a.[Description], a.CreatedAt, c.id, u.Username, u.PictureUrl
