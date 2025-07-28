@@ -286,7 +286,7 @@ WHERE s.Id = 2 AND b.Id = 2;
 --JOIN OwnerTypes ot ON ot.Id = m.OwnerTypeId 
 
 -- Get labels of card(id=39) (Slide 35)
-SELECT l.Title, col.[Name]
+SELECT c.Id, c.Title, col.[Name], col.Icon
 FROM Labels l
 JOIN CardLabels cl ON cl.LabelId = l.Id
 JOIN Cards c ON c.Id = cl.CardId
@@ -301,7 +301,8 @@ FROM Activities a
 JOIN OwnerTypes ot ON ot.Id = a.OwnerTypeId
 JOIN Cards c ON c.Id = a.OwnerId
 JOIN Users u ON u.Id = a.UserId
-WHERE ot.Value = 'Card' AND c.Id = 12;
+WHERE ot.Value = 'Card' AND c.Id = 12
+ORDER BY a.CreatedAt DESC
 
 -- Get list Photo Uplash of card(id=12) (Slide 37)
 SELECT c.CoverValue
@@ -310,23 +311,21 @@ JOIN Stages s ON s.Id = c.StageId
 JOIN Boards b ON b.Id = s.BoardId
 WHERE c.CoverType = 'UNSPLASH' AND b.Id = 11 AND c.Id = 2 AND c.Position = 2
 
--- Get color of card(id=12) (Slide 37)
+-- Get list color of card(id=12) (Slide 37)
 SELECT c.[Name], c.Icon
 FROM Colors c
 
--- Get label of card(id=12) (Slide 37)
-SELECT l.Title, c.[Name]
+-- Get label of card(id=12) (Slide 38)
+SELECT l.Title, co.[Name], co.Icon
 FROM Labels l
-JOIN Colors c ON c.Id = l.ColorId
+JOIN Colors co ON co.Id = l.ColorId
+JOIN CardLabels cl ON cl.LabelId = l.Id
+JOIN Cards c ON c.Id = cl.CardId
+WHERE c.Id = 1
 
 
--- list all checklist items assigned to the user with status set to false (incomplete). (Slide 40)
-SELECT 
-    cli.[Name] , 
-    cli.[Status] ,
-    ca.Title , 
-    bo.[Name] ,
-    us.PictureUrl
+-- Get list all checklist items assigned to the user with status(= false). (Slide 40)
+SELECT cl.[Name] AS ChecklistName, cli.[Name] AS ChecklistItemName , cli.[Status] , ca.Id AS CardId
 FROM CheckListItems cli
 JOIN CheckLists cl ON cl.Id = cli.CheckListId
 JOIN Cards ca ON ca.Id = cl.CardId
@@ -334,40 +333,60 @@ JOIN Stages st ON st.Id = ca.StageId
 JOIN Boards bo ON bo.Id = st.BoardId
 JOIN Members me ON me.Id = cli.MemberId
 JOIN Users us ON us.Id = me.UserId
-WHERE cli.[Status] = 0 AND me.UserId = 1
+WHERE cli.[Status] = 0 AND ca.Id = 832
 
 -- Get attachments of card (id = 1) (Slide 42)
-SELECT a.[Name], a.Link ,a.UploadAt
+SELECT a.[Name], a.Link ,a.UploadAt, a.IsCover
 FROM Attachments a
 JOIN Cards c ON c.Id = a.CardId
-WHERE c.Id = 42 AND a.FileType IS NULL
-
+WHERE c.Id = 42 
+ORDER BY UploadAt DESC
 
 -- Get comment of card (id = 1) (Slide 43)
-SELECT c.CardId, ca.Title AS CardTitle, c.Content, c.CreatedAt
+SELECT c.CardId, ca.Title AS CardTitle, c.Content, c.CreatedAt, c.Id AS CommentId, u.Username, u.PictureUrl
 FROM Comments c
 JOIN Cards ca ON ca.Id = c.CardId
 JOIN Stages s ON s.Id = ca.StageId
 JOIN Boards b ON b.Id = s.BoardId 
+JOIN Users u ON u.Id = c.CreatedBy
 WHERE ca.Id = 1 AND s.Id = 35 AND b.Id = 35
 
--- Get reaction of comment's card (id = 1) (Slide 43)
-SELECT r.Icon, c.CardId
+-- Get reaction of comment's card (id = 201) (Slide 43)
+SELECT r.Id, r.Icon
 FROM Reactions r
 JOIN CommentReactions cr ON cr.ReactionId = r.Id
 JOIN Comments c ON c.Id = cr.CommentId
 JOIN Cards ca ON ca.Id = c.CardId
-WHERE ca.Id = 337 
+WHERE ca.Id = 201 
+
+-- Get reaction of comment's card (id = 201) (Slide 43)
+SELECT r.Id, r.Icon
+FROM Reactions r
+JOIN CommentReactions cr ON cr.ReactionId = r.Id
+JOIN Comments c ON c.Id = cr.CommentId
+JOIN Cards ca ON ca.Id = c.CardId
+WHERE ca.Id = 201 
+
+-- Get list sticker  (Slide 47)
+SELECT s.Id, s.[Name], s.StickerUrl
+FROM Stickers s
+
+-- Get stickers of card(id=1) (Slide 47)
+SELECT s.Id, s.[Name], s.StickerUrl
+FROM Stickers s
+JOIN CardStickers cs ON cs.StickerId = s.Id
+JOIN Cards c ON c.Id = cs.CardId
+WHERE c.Id = 1
+
+-- Show Activities unread notifications of the user. (Slide 50)
+SELECT u.Username, u.PictureUrl, a.[Description], a.CreatedAt
+FROM Activities a
+JOIN Notifications n ON a.Id = n.ActivityId
+JOIN  Users u ON u.Id = a.UserId
+WHERE u.Id = 2 AND n.Status = 'UNREAD'
 
 -- Get list boards in collection (id = 1) (Slide 52)
 SELECT b.[Name], b.BackgroundUrl
 FROM Boards b
 JOIN BoardCollections bc ON bc.BoardId = b.Id
 
-
--- Show Activities unread notifications of the user. (Slide 54)
-SELECT u.Username, u.PictureUrl, a.[Description], a.CreatedAt
-FROM Activities a
-JOIN Notifications n ON a.Id = n.ActivityId
-JOIN  Users u ON u.Id = a.UserId
-WHERE u.Id = 2 AND n.Status = 'UNREAD'
