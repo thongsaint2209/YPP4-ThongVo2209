@@ -116,21 +116,21 @@ WITH GetUserPermission AS
 SELECT u.Username, p.[Name]
 FROM Users u
 JOIN GetUserPermission gup ON gup.UserId = u.Id
-JOIN Permissions p ON p.Id = gup.PermissionId
+JOIN [Permissions] p ON p.Id = gup.PermissionId
 
 -- Member,Sharelink
 -- Get sharelink of workspace(id=9) (Slide 13)
 SELECT sl.Token, sl.[Status]
 FROM ShareLinks sl
     JOIN Workspaces w ON w.Id = sl.OwnerId
-    JOIN Permissions p ON sl.PermissionId = p.Id
+    JOIN [Permissions] p ON sl.PermissionId = p.Id
 WHERE w.Id = 9;
 
 -- Get all members of the board(id=1) with permissions (Slide 13)
 SELECT m.Id, u.PictureUrl, u.Username, u.Email ,p.[Name]
 FROM Members m
     JOIN Boards b ON b.Id = m.OwnerId
-    JOIN Permissions p ON p.Id = m.PermissionId
+    JOIN [Permissions] p ON p.Id = m.PermissionId
     JOIN Users u ON u.Id = m.UserId
 WHERE b.Id = 1;
 
@@ -172,7 +172,7 @@ GROUP BY sk.KeyName, so.DisplayValue
 
 -- Power up
 -- Get name all power up of workspace(id=2)  (Slide 21)
-SELECT pu.[Name], pu.BackgroundUrl , pu.IsStaffPick, pu.IsIntegration
+SELECT pu.[Name], pu.BackgroundUrl , pu.IsStaffPick
 FROM PowerUps pu
 JOIN BoardPowerUps bu ON bu.PowerUpId = pu.Id
 JOIN Boards b ON b.Id = bu.BoardId
@@ -359,12 +359,7 @@ GROUP BY r.Id, r.Icon;
 
 --  Show all CustomField and Selection of a specific card (Slide 45)
 WITH CustomFieldOfCard AS (
-    SELECT 
-        Id,
-        Title,
-        FieldType,
-        Position,
-        BoardId
+    SELECT Id,Title, FieldType, Position,BoardId
     FROM CustomFields cf
     WHERE BoardId = (
         SELECT 
@@ -421,15 +416,17 @@ JOIN Cards c ON c.Id = cs.CardId
 WHERE c.Id = 1
 
 -- Get list all recent card's activities in the user's card. (Slide 49)
-SELECT ca.Title , wo.[Name] AS WorkSpace , bo.[Name]  AS Board, st.Title , us.Username , us.PictureUrl , ac.[Description],
-       ABS(DATEDIFF(DAY, GETDATE(), ac.CreatedAt)) AS day_ago
+SELECT ca.Title , wo.[Name] AS WorkSpace , bo.[Name]  AS Board, st.Title , u.Username , u.PictureUrl , ac.[Description],
+       DATEDIFF(DAY,ac.CreatedAt, GETDATE()) AS day_ago
 FROM (SELECT UserId, OwnerTypeId, OwnerId, [Description], CreatedAt
-    FROM Activities WHERE OwnerTypeId = 3) ac
-JOIN Cards ca ON ca.Id = ac.OwnerId AND ca.CreatedBy = 1
+      FROM Activities 
+      WHERE OwnerTypeId = 3) ac
+JOIN Cards ca ON ca.Id = ac.OwnerId 
 JOIN Stages st ON st.Id = ca.StageId
 JOIN Boards bo ON bo.Id = st.BoardId
 JOIN Workspaces wo ON wo.Id = bo.WorkspaceId
-JOIN Users us ON us.Id = ac.UserId
+JOIN Users u ON u.Id = ac.UserId
+WHERE u.Id = 1
 Order By day_ago;
 
 -- Show Activities unread notifications of the user. (Slide 50)
