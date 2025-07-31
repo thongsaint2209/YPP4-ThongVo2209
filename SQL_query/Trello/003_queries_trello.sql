@@ -1,5 +1,5 @@
-﻿-- Homepage
--- Homepage: recently viewed boards
+﻿-- 
+-- recently viewed boards
 -- Get 4 recently viewed boards by user(id=1) (Slide 4)
 SELECT TOP 4 b.Id, b.BoardName, b.BackgroundUrl
 FROM Boards b
@@ -8,7 +8,7 @@ JOIN Users u ON u.Id = bu.UserId
 WHERE bu.UserId = 1
 ORDER BY bu.AccessedAt DESC;
 
--- Homepage: Workspace, Member
+-- Workspace, Member
 -- Get all workspace that User(id=1) is member (Slide 4)
 SELECT w.Id, w.WorkspaceName
 FROM Workspaces w
@@ -26,7 +26,7 @@ JOIN Workspaces w ON b.WorkspaceId = w.Id
 JOIN Users u ON m.UserId = u.Id
 WHERE u.Id = 1 AND ot.OwnerTypeValue = 'Board'
 
--- Homepage: Board Starred
+-- Board Starred
 -- Get the all starred boards by the user(id=8). (Slide 4)
 SELECT b.Id, b.BoardName
 FROM Boards b
@@ -69,6 +69,28 @@ SELECT t.Id, t.Title, t.TemplateDescription, t.Copied, t.Viewed, b.BackgroundUrl
 FROM Templates t
     JOIN Boards b ON b.id = t.BoardId
 WHERE t.Id = 1;
+
+-- list all checklist items assigned to the user with status set to false. (Slide 8)
+SELECT 
+    cli.CheckListItemName AS checklist_item_name, 
+    cli.CheckListItemStatus AS checklist_item_status,
+    ca.Title AS card_title, 
+    bo.BoardName AS board_name,
+    us.PictureUrl
+FROM CheckListItems cli
+JOIN CheckLists cl ON cl.Id = cli.CheckListId
+JOIN Cards ca ON ca.Id = cl.CardId
+JOIN Stages st ON st.Id = ca.StageId
+JOIN Boards bo ON bo.Id = st.BoardId
+JOIN Members me ON me.Id = cli.MemberId
+JOIN Users us ON us.Id = me.UserId
+WHERE cli.CheckListItemStatus = 0 AND me.UserId = 1;
+
+-- List all Activities of cards that are currently assigned to the member.
+
+-- List all Comment of cards that are currently assigned to the member.
+
+
 
 -- Get top 4 suggested Boards Template for each Teamplate category have highest view (Slide 9)
 SELECT TOP 4 b.Id, b.BoardName, b.BackgroundUrl
@@ -124,22 +146,25 @@ FROM Members m
 WHERE o.OwnerTypeValue = 'Board' AND b.Id = 1;
 
 -- List all permission options can choose (Slide 15)
-SELECT RolePermissionName AS [permission_name]
+SELECT RolePermissionName 
 FROM RolePermissions;
 
 -- Setting
--- Get all setting keys of user 
-SELECT sk.Id, sk.KeyName
-FROM SettingKeys sk 
-JOIN OwnerTypes ot ON ot.Id = sk.OwnerTypeId
-WHERE ot.OwnerTypeValue = 'User' 
+-- Select all settingkey of Workspace with value 
+SELECT sk.Id, sk.KeyName, so.DisplayValue, sv.SettingContent
+FROM  SettingValues sv 
+JOIN SettingKeys sk ON sv.SettingKeyId = sk.Id AND sk.DataTypeId = 1 
+JOIN OwnerTypes ot ON sk.OwnerTypeId = ot.Id
+JOIN SettingOptions so ON so.Id = sv.SettingContent
+JOIN Workspaces w ON w.Id = sv.OwnerId 
+WHERE ot.OwnerTypeValue = 'WORKSPACE' AND w.Id = 6
 
 -- Get setting workspace(id=7) visibility(value=22, user=7) (Slide 17)
 SELECT w.Id, w.WorkspaceName, sk.KeyName, so.DisplayValue
 FROM SettingKeys sk
 JOIN SettingValues sv ON sv.SettingKeyId = sk.Id
-JOIN OwnerTypes ot ON ot.Id = sk.OwnerTypeId
 JOIN SettingOptions so ON so.Id = sv.SettingValue
+JOIN OwnerTypes ot ON ot.Id = sk.OwnerTypeId
 JOIN Workspaces w ON w.Id = sv.OwnerId
 JOIN Users u ON u.Id = w.CreatedBy
 WHERE ot.OwnerTypeValue = 'Workspace' AND sk.KeyName = 'workspacevisibility' AND u.Id = 7 AND  w.Id = 7;
@@ -353,49 +378,23 @@ JOIN Comments c ON c.Id = cr.CommentId
 WHERE c.Id = 104
 GROUP BY r.Id, r.Icon;
 
---  Show all CustomField and Selection of a specific card (Slide 45)
-WITH CustomFieldOfCard AS (
-    SELECT Id,Title, FieldType, Position,BoardId
-    FROM CustomFields cf
-    WHERE BoardId = (
-        SELECT st.BoardId
-        FROM (
-            SELECT Id, StageId
-            FROM Cards
-            WHERE Id = 1
-        ) ca
-        JOIN Stages st ON st.Id = ca.StageId
-    )
-)
-SELECT
-    cfoc.Id AS custom_field_id,
-    cfoc.Title AS custom_field_title,
-    cfoc.FieldType AS custom_field_type,
-    cfoc.Position AS custom_field_position,
-    fv.FieldValue AS field_value,
-    CASE 
-        WHEN cfoc.FieldType = 'DROPDOWN' THEN fi.FieldItemValue
-        ELSE fv.FieldValue
-    END AS field_item_value,
-    fv.CardId AS card_id
-FROM CustomFieldOfCard cfoc
-JOIN FieldValues fv ON fv.CustomFieldId = cfoc.Id AND fv.CardId = 1
-LEFT JOIN FieldItems fi ON cfoc.FieldType = 'DROPDOWN' AND fi.Id = TRY_CAST(fv.FieldValue AS INT);
-
--- Show all options of a custom field(id=819)  with DROPDOWN type (Slide 45)
-SELECT 
-    cf.Id AS custom_field_id,
-    cf.Title AS custom_field_title,
-    cf.FieldType AS custom_field_type,
-    fi.FieldItemValue AS field_item_value,
-    fi.FieldItemPriority AS field_item_priority,
-    co.ColorName AS color_name,
-    co.Icon AS color_icon, cf.Id
+-- Select all Custom Field of board (Slide 45)
+SELECT cf.Id, cf.title, cf.DataTypeId
 FROM CustomFields cf
-JOIN FieldItems fi ON fi.CustomFieldId = cf.Id
-JOIN Colors co ON co.Id = fi.ColorId
-WHERE cf.FieldType = 'DROPDOWN' AND cf.id = '819'
-ORDER BY fi.FieldItemPriority;
+WHERE cf.BoardId = 1
+
+-- Select all Custom Field of board with value (Slide 45)
+SELECT cf.Id, cf.title, cf.DataTypeId, fv.FieldValue, fi.FieldItemValue
+FROM CustomFields cf
+JOIN FieldValues fv ON fv.CustomFieldId = cf.Id
+LEFT JOIN FieldItems fi ON fi.Id= TRY_CAST(fv.FieldValue AS INT) AND cf.DataTypeId = 1
+WHERE cf.BoardId = 1
+
+-- Select all option of 1 Custom Field (=dropdown) (Slide 45)
+SELECT cf.Id, cf.DataTypeId, cf.Title, fi.FieldItemValue
+FROM CustomFields cf
+JOIN FieldItems fi ON fi.CustomFieldId= cf.Id AND cf.DataTypeId = 1
+WHERE cf.BoardId = 491 AND cf.Id = 1
 
 -- Get list sticker  (Slide 47)
 SELECT s.Id, s.StickerName, s.StickerUrl
