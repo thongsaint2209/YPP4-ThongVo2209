@@ -383,12 +383,8 @@ SELECT cf.Id, cf.title, cf.DataTypeId
 FROM CustomFields cf
 WHERE cf.BoardId = 1
 
--- Select all Custom Field of board with value (Slide 45)
-SELECT cf.Id, cf.title, cf.DataTypeId, fv.FieldValue, fi.FieldItemValue
-FROM CustomFields cf
-JOIN FieldValues fv ON fv.CustomFieldId = cf.Id
-LEFT JOIN FieldItems fi ON fi.Id= TRY_CAST(fv.FieldValue AS INT) AND cf.DataTypeId = 1
-WHERE cf.BoardId = 1
+-- Select all Cust4
+
 
 -- Select all option of 1 Custom Field (=dropdown) (Slide 45)
 SELECT cf.Id, cf.DataTypeId, cf.Title, fi.FieldItemValue

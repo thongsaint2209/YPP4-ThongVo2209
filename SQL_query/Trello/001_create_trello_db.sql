@@ -17,16 +17,23 @@ CREATE TABLE Users (
 );
 GO
 
-CREATE TABLE [dbo].[DataTypes](
-    [Id] [int] IDENTITY(1,1) PRIMARY KEY,
-    [TypeValue] [varchar](20) NULL,
-    Icon [varchar](255) NOT NULL
+CREATE TABLE CategoryTypes (
+    Id int IDENTITY(1,1) PRIMARY KEY,
+    CategoryTypeValue [varchar](50) NULL   
 );
 GO
 
-CREATE TABLE OwnerTypes (
+
+CREATE TABLE Categories (
     Id int IDENTITY(1,1) PRIMARY KEY,
-    OwnerTypeValue [varchar](50) NULL   
+    CategoryName [varchar](50) NULL,
+    CategoryDescription [varchar](1000) NULL,
+    CategoryTypeId [int] NULL FOREIGN KEY REFERENCES CategoryTypes(Id), --all category of entities,
+    CreatedAt [datetime] NULL,
+    CreatedBy [int] NULL FOREIGN KEY REFERENCES Users(Id),
+    Icon [varchar](255) NULL,  
+    Position [int] NULL,
+    IsActive [bit] NOT NULL,
 );
 GO
 
@@ -35,7 +42,7 @@ CREATE TABLE Activities (
     CreatedAt [datetime] NULL,
     ActivityDescription [nvarchar](1000) NULL,
     UserId [int] NULL FOREIGN KEY REFERENCES Users(Id),
-    OwnerTypeId [int] NULL FOREIGN KEY REFERENCES OwnerTypes(Id),
+    CategoryId [int] NULL FOREIGN KEY REFERENCES Categories(Id), --workspace,board,card,user
     OwnerId [int] NULL    
 );
 GO
@@ -44,7 +51,7 @@ CREATE TABLE Workspaces (
     Id int IDENTITY(1,1) PRIMARY KEY,
     WorkspaceName [varchar](255) NULL,
     WorkspaceDescription [nvarchar](1000) NULL,
-    WorkspaceType [varchar](100) NULL,
+    CategoryId [int] NULL FOREIGN KEY REFERENCES Categories(Id), --category of workspace
     CreatedAt [datetime] NULL,
     CreatedBy [int] NULL FOREIGN KEY REFERENCES Users(Id),
     UpdatedAt [datetime] NULL,
@@ -59,13 +66,19 @@ CREATE TABLE Boards (
     BoardDescription [nvarchar](1000) NULL,
     CreatedAt [datetime] NULL,
     CreatedBy [int] NULL FOREIGN KEY REFERENCES Users(Id),
-    AccessedAt [datetime] NULL,
-    IsStar [bit] NULL,
     BackgroundUrl [varchar](2000) NULL,
     WorkspaceId [int] NULL FOREIGN KEY REFERENCES Workspaces(Id),
     BoardStatus [varchar](50) NULL,    
     UpdatedAt [datetime] NULL,
     UpdatedBy [int] NULL FOREIGN KEY REFERENCES Users(Id)
+);
+GO
+
+CREATE TABLE UserStarredBoards (
+    UserId INT NOT NULL FOREIGN KEY REFERENCES Users(Id),
+    BoardId INT NOT NULL FOREIGN KEY REFERENCES Boards(Id),
+    CreatedAt DATETIME NOT NULL DEFAULT GETDATE(),
+    StarredBoardsStatus [bit] NOT NULL,
 );
 GO
 
@@ -102,7 +115,7 @@ CREATE TABLE Cards (
     CardLocation [varchar](255) NULL,
     StartDate [date] NULL,
     DueDate [date] NULL,
-    CoverType [varchar](50) NULL,
+    CategoryId [int] NULL FOREIGN KEY REFERENCES Categories(Id), --cover type
     CoverValue [varchar](2000) NULL,
     Position [int] NULL,    
     UpdatedAt [datetime] NULL,
@@ -113,11 +126,12 @@ GO
 CREATE TABLE Attachments (
     Id int IDENTITY(1,1) PRIMARY KEY,
     CardId [int] NULL FOREIGN KEY REFERENCES Cards(Id),
-    FileType [varchar](50) NULL,
+    CategoryId [int] NULL FOREIGN KEY REFERENCES Categories(Id), --attachment type
     AttachmentPath [varchar](255) NULL, --both link and file path store here
     AttachmentName [varchar](255) NULL,
-    UpdatedAt [datetime] NULL,
-    UpdatedBy [int] NULL FOREIGN KEY REFERENCES Users(Id),
+    CreatedAt [datetime] NULL,
+    CreatedBy [int] NULL FOREIGN KEY REFERENCES Users(Id),
+    Size [varchar](255) NULL,
     IsCover [bit] NULL    
 );
 GO
@@ -144,9 +158,8 @@ CREATE TABLE BillingPlans (
     Id int IDENTITY(1,1) PRIMARY KEY,
     PlanName [varchar](100) NULL,
     BillingPlanDescription [varchar](1000) NULL,
-    BIllingPlanType [varchar](50) NULL,
     PricePerUser [decimal](10, 2) NULL,
-    BillingPlanStatus [varchar](50) NULL  
+    IsActive [bit] NOT NULL
 );
 GO
 
@@ -167,12 +180,6 @@ CREATE TABLE BoardCollections (
 );
 GO
 
-CREATE TABLE PowerUpCategories (
-    Id int IDENTITY(1,1) PRIMARY KEY,
-    PowerUpCategoryName [varchar](50) NULL    
-);
-GO
-
 CREATE TABLE PowerUps (
     Id int IDENTITY(1,1) PRIMARY KEY,
     PowerUpName [varchar](50) NULL,
@@ -184,7 +191,7 @@ CREATE TABLE PowerUps (
     PolicyUrl [varchar](2000) NULL,
     IsStaffPick [bit] NULL,
     IsIntegration [bit] NULL,
-    PowerUpCategoryId [int] NULL FOREIGN KEY REFERENCES PowerUpCategories(Id)    
+    CategoryId [int] NULL FOREIGN KEY REFERENCES Categories(Id), --PowerUps type  
 );
 GO
 
@@ -195,9 +202,9 @@ CREATE TABLE BoardPowerUps (
 );
 GO
 
-CREATE TABLE UserViewHistory (
+CREATE TABLE UserViewHistories (
     UserId [int] NOT NULL FOREIGN KEY REFERENCES Users(Id),
-    OwnerTypeId [int] NOT NULL FOREIGN KEY REFERENCES OwnerTypes(Id),
+    CategoryId [int] NULL FOREIGN KEY REFERENCES Categories(Id), --Workspace, Board, Card
     OwnerId [int] NOT NULL,
     AccessedAt [datetime] NULL
 );
@@ -222,16 +229,9 @@ CREATE TABLE CardLabels (
 );
 GO
 
-
-CREATE TABLE StickerCategories(
-    Id int IDENTITY(1,1) PRIMARY KEY,
-    CategoryName [varchar](100) NOT NULL,
-    Position int NOT NULL
-)
-
 CREATE TABLE Stickers (
     Id int IDENTITY(1,1) PRIMARY KEY,
-    StickerCategoryId [int] NULL FOREIGN KEY REFERENCES StickerCategories(Id),
+    CategoryId [int] NULL FOREIGN KEY REFERENCES Categories(Id), --Sticker Category 
     StickerName [varchar](50) NULL,
     StickerUrl [varchar](2000) NULL,
     CreatedAt [datetime] NULL,
@@ -272,14 +272,15 @@ GO
 CREATE TABLE Members (
     Id int IDENTITY(1,1) PRIMARY KEY,
     UserId [int] NULL FOREIGN KEY REFERENCES Users(Id),
-    PermissionId [int] NULL FOREIGN KEY REFERENCES RolePermissions(Id),
-    OwnerTypeId [int] NULL FOREIGN KEY REFERENCES OwnerTypes(Id),
+    RolePermissonId [int] NULL FOREIGN KEY REFERENCES RolePermissions(Id), --Admin, Member, Observer
+    CategoryId [int] NULL FOREIGN KEY REFERENCES Categories(Id), --Workspace, Board, Card
     OwnerId [int] NULL,
     InvitedBy [int] NULL,
     JoinedAt [datetime] NULL,
     MemberStatus [varchar](50) NULL    
 );
 GO
+
 
 CREATE TABLE CheckListItems (
     Id int IDENTITY(1,1) PRIMARY KEY,
@@ -307,20 +308,12 @@ CREATE TABLE Comments (
 );
 GO
 
-CREATE TABLE ReactionCategories (
-    Id int IDENTITY(1,1) PRIMARY KEY,
-    CategoryName [varchar](50) NOT NULL,      -- e.g. Food & Drink
-    Icon [varchar](255) NULL,  
-    Position [int] NOT NULL,
-    IsActive [bit] NOT NULL,
-);
-
 
 CREATE TABLE Reactions (
     Id int IDENTITY(1,1) PRIMARY KEY,
     ReactionsName [varchar](255) NULL, 
     ShortCode [varchar](50) NOT NULL, -- e.g. :neutral_face:
-    ReactionCategoryId [int] FOREIGN KEY REFERENCES ReactionCategories(Id),
+    CategoryId [int] NULL FOREIGN KEY REFERENCES Categories(Id), --Reaction Category
     Icon [varchar](255) NULL    
 );
 GO
@@ -336,7 +329,7 @@ GO
 CREATE TABLE CustomFields (
     Id int IDENTITY(1,1) PRIMARY KEY,
     Title [varchar](255) NULL,
-    DataTypeId [int] NULL FOREIGN KEY REFERENCES DataTypes(Id),
+    CategoryId [int] NULL FOREIGN KEY REFERENCES Categories(Id), --CustomFields Category
     BoardId [int] NULL FOREIGN KEY REFERENCES Boards(Id),
     CreatedAt [datetime] NULL,
     CreatedBy [int] NULL FOREIGN KEY REFERENCES Users(Id),
@@ -376,7 +369,7 @@ GO
 CREATE TABLE Notifications (
     Id int IDENTITY(1,1) PRIMARY KEY,
     ActivityId [int] NULL FOREIGN KEY REFERENCES Activities(Id),
-    NotificationStatus [varchar](50) NULL    
+    IsRead [bit] NOT NULL  
 );
 GO
 
@@ -396,12 +389,12 @@ CREATE TABLE SettingKeys (
     Id int IDENTITY(1,1) PRIMARY KEY,
     KeyName [varchar](100) NULL,
     SettingKeyDescription [nvarchar](1000) NULL,
-    OwnerTypeId [int] NULL FOREIGN KEY REFERENCES OwnerTypes(Id),
+    CategoryId [int] NULL FOREIGN KEY REFERENCES CategoryTypes(Id), --workspace, board, card
     DefaultValue [int] NULL,
-    DataTypeId [int] NULL   
+    IsBoolean [bit] NOT NULL
 );
 GO
-
+                
 CREATE TABLE SettingKeySettingOptions (
     SettingKeyId [int] NOT NULL FOREIGN KEY REFERENCES SettingKeys(Id),
     SettingOptionId [int] NOT NULL FOREIGN KEY REFERENCES SettingOptions(Id)
@@ -422,9 +415,9 @@ GO
 
 CREATE TABLE ShareLinks (
     Id int IDENTITY(1,1) PRIMARY KEY,
-    OwnerTypeId [int] NULL FOREIGN KEY REFERENCES OwnerTypes(Id),
+    CategoryId [int] NULL FOREIGN KEY REFERENCES Categories(Id), --workspace, board, card
+    RolePermissonId [int] NULL FOREIGN KEY REFERENCES RolePermissions(Id), --admin, member
     OwnerId [int] NULL,
-    PermissionId [int] NULL FOREIGN KEY REFERENCES RolePermissions(Id),
     ShareLinkToken [varchar](255) NULL,
     ShareLinkStatus [bit] NOT NULL   
 );
@@ -436,17 +429,10 @@ CREATE TABLE Subscriptions (
     BillingPlanId [int] NULL FOREIGN KEY REFERENCES BillingPlans(Id),
     StartDate [date] NULL,
     EndDate [date] NULL,
-    BillingCycle [varchar](20) NULL,
-    SubscriptionStatus [varchar](50) NULL,
+    IsMonthly [bit] NOT NULL, --Monthly/Annually
+    SubscriptionStatus [bit] NOT NULL,
     AutoRenew [bit] NULL,
     MemberCountBilled [int] NULL    
-);
-GO
-
-CREATE TABLE TemplateCategories (
-    Id int IDENTITY(1,1) PRIMARY KEY,
-    TemplateCategoryName [varchar](100) NULL,
-    IconUrl [varchar](2000) NULL    
 );
 GO
 
@@ -454,7 +440,7 @@ CREATE TABLE Templates (
     Id int IDENTITY(1,1) PRIMARY KEY,
     Title [varchar](255) NULL,
     TemplateDescription [nvarchar](1000) NULL,
-    TemplateCategoryId [int] NULL FOREIGN KEY REFERENCES TemplateCategories(Id),
+    CategoryId [int] NULL FOREIGN KEY REFERENCES Categories(Id), --Template Categories
     Viewed [int] NULL,
     Copied [int] NULL,
     CreatedBy [int] NULL FOREIGN KEY REFERENCES Users(Id),
