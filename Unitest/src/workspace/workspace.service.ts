@@ -3,21 +3,28 @@ import { Workspace } from './entities/workspace.entity';
 
 @Injectable()
 export class WorkspaceService {
-  private mockData: Workspace[] = [
-    new Workspace(
-      1,
-      'Mock Workspace',
-      'This is a mock workspace',
-      2,
-      new Date('2023-01-01'),
-      101,
-      new Date('2023-01-02'),
-      102,
-      'https://example.com/logo.png',
-    ),
-  ];
+  private _mockData: Workspace[] = [];
+  private _nextId = 1;
 
-  // ✅ CREATE
+  // Getter và setter cho mockData
+  get mockData(): Workspace[] {
+    return this._mockData;
+  }
+
+  set mockData(data: Workspace[]) {
+    this._mockData = data;
+  }
+
+  // Getter và setter cho nextId
+  get nextId(): number {
+    return this._nextId;
+  }
+
+  set nextId(id: number) {
+    this._nextId = id;
+  }
+
+  // CREATE
   create(data: Omit<Workspace, 'id' | 'createdAt'>): Workspace {
     const now = new Date();
 
@@ -43,14 +50,14 @@ export class WorkspaceService {
     return newWorkspace;
   }
 
-  // ✅ READ ALL
+  // READ ALL
   findAll(): Workspace[] {
     const sql = `SELECT * FROM Workspaces`;
     console.log('🟢 SQL EXECUTED:', sql);
     return this.mockData;
   }
 
-  // ✅ READ BY ID
+  // READ BY ID
   getWorkspaceById(id: number): Workspace | null {
     const sql = `SELECT * FROM Workspaces WHERE Id = ${id}`;
     console.log('🟢 SQL EXECUTED:', sql);
@@ -58,7 +65,7 @@ export class WorkspaceService {
     return this.mockData.find((ws) => ws.id === id) ?? null;
   }
 
-  // ✅ UPDATE
+  // UPDATE
   update(id: number, data: Partial<Workspace>): Workspace | null {
     const now = new Date();
 
@@ -95,21 +102,10 @@ export class WorkspaceService {
     );
 
     this.mockData[index] = updated;
-    // return updated;
-    return new Workspace(
-      1,
-      'New Name',
-      'New description',
-      2,
-      new Date(),
-      456,
-      undefined,
-      undefined,
-      'https://new-logo.com/logo.png',
-    );
+    return updated;
   }
 
-  // ✅ DELETE
+  // DELETE
   delete(id: number): boolean {
     const sql = `DELETE FROM Workspaces WHERE Id = ${id}`;
     console.log('🟢 SQL EXECUTED:', sql);
