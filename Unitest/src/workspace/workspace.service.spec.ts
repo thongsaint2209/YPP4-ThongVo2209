@@ -13,10 +13,11 @@ describe('WorkspaceService - create()', () => {
     workspaceService = module.get<WorkspaceService>(WorkspaceService);
 
     // Reset dữ liệu mỗi lần test
-    (workspaceService as any).mockData = [];
-    (workspaceService as any).nextId = 1;
+    workspaceService.mockData = [];
+    workspaceService.nextId = 1;
   });
 
+  // Create a new workspace
   it('should create a workspace successfully', () => {
     const input = {
       workspaceName: 'Test Workspace',
@@ -37,31 +38,29 @@ describe('WorkspaceService - create()', () => {
     expect(workspaceService.findAll().length).toBe(1);
   });
 
+  // Update workspaces
   it('should update a workspace', () => {
-    // Tạo workspace đầu tiên
-    const workspaceToBeUpdated = new Workspace(
-      1,
-      'New Name',
-      'New description',
-      2,
-      new Date(),
-      456,
-      undefined,
-      undefined,
-      'https://new-logo.com/logo.png',
-    );
+    // create workspace
+    workspaceService.create({
+      workspaceName: 'Old Name',
+      workspaceDescription: 'Old Description',
+      categoryId: 1,
+      createdBy: 123,
+      updatedBy: 1,
+      logoUrl: 'https://logo.com/old.png',
+    });
 
-    // Gọi hàm update
-    const updated = workspaceService.update(
-      workspaceToBeUpdated.id,
-      workspaceToBeUpdated,
-    );
+    console.log('🟢 Mock Data:', (workspaceService as any).mockData);
 
-    // Kiểm tra kết quả
-    // expect(updated).not.toBeNull();
-    // expect(updated?.workspaceName).toBe('New Name');
-    // expect(updated?.workspaceDescription).toBe('New description');
-    expect(updated?.categoryId).toBe(2);
-    // expect(updated?.logoUrl).toBe('https://new-logo.com/logo.png');
+    // Update workspace
+    const updated = workspaceService.update(1, {
+      workspaceName: 'New Name',
+      logoUrl: 'https://new-logo.com/logo.png',
+    });
+
+    // Assert: kiểm tra kết quả
+    expect(updated).not.toBeNull();
+    expect(updated?.workspaceName).toBe('New Name');
+    expect(updated?.logoUrl).toBe('https://new-logo.com/logo.png');
   });
 });
