@@ -100,81 +100,81 @@ describe('WorkspaceboardService', () => {
         workspaceName: 'Team 2',
       });
     });
-  });
 
-  it('should return all workspaces with their boards (LEFT JOIN)', () => {
-    const workspaces: Workspace[] = [
-      new Workspace(1, 'Team A', '', 1, new Date(), 1),
-      new Workspace(2, 'Team B', '', 1, new Date(), 2),
-      new Workspace(3, 'Team C', '', 1, new Date(), 3),
-    ];
+    it('should return all workspaces with their boards (LEFT JOIN)', () => {
+      const workspaces: Workspace[] = [
+        new Workspace(1, 'Team A', '', 1, new Date(), 1),
+        new Workspace(2, 'Team B', '', 1, new Date(), 2),
+        new Workspace(3, 'Team C', '', 1, new Date(), 3),
+      ];
 
-    const boards: Board[] = [
-      new Board(
-        1,
-        'Board A1',
-        '',
-        new Date(),
-        1,
-        '',
-        1,
-        'active',
-        new Date(),
-        1,
-      ),
-      new Board(
-        2,
-        'Board A2',
-        '',
-        new Date(),
-        1,
-        '',
-        1,
-        'active',
-        new Date(),
-        1,
-      ),
-      new Board(
-        3,
-        'Board B1',
-        '',
-        new Date(),
-        2,
-        '',
-        2,
-        'archived',
-        new Date(),
-        2,
-      ),
-    ];
+      const boards: Board[] = [
+        new Board(
+          1,
+          'Board A1',
+          '',
+          new Date(),
+          1,
+          '',
+          1,
+          'active',
+          new Date(),
+          1,
+        ),
+        new Board(
+          2,
+          'Board A2',
+          '',
+          new Date(),
+          1,
+          '',
+          1,
+          'active',
+          new Date(),
+          1,
+        ),
+        new Board(
+          3,
+          'Board B1',
+          '',
+          new Date(),
+          2,
+          '',
+          2,
+          'archived',
+          new Date(),
+          2,
+        ),
+      ];
 
-    const result = service.joinWorkspaceWithBoards(workspaces, boards);
+      const result = service.leftjoinWorkspaceWithBoards(workspaces, boards);
 
-    expect(result).toEqual([
-      {
-        workspaceId: 1,
-        workspaceName: 'Team A',
-        boardId: 1,
-        boardName: 'Board A1',
-      },
-      {
-        workspaceId: 1,
-        workspaceName: 'Team A',
-        boardId: 2,
-        boardName: 'Board A2',
-      },
-      {
-        workspaceId: 2,
-        workspaceName: 'Team B',
-        boardId: 3,
-        boardName: 'Board B1',
-      },
-      {
-        workspaceId: 3,
-        workspaceName: 'Team C',
-        boardId: null,
-        boardName: null,
-      }, // Không có board nào
-    ]);
+      expect(result).toEqual([
+        {
+          workspaceId: 1,
+          workspaceName: 'Team A',
+          boardId: 1,
+          boardName: 'Board A1',
+        },
+        {
+          workspaceId: 1,
+          workspaceName: 'Team A',
+          boardId: 2,
+          boardName: 'Board A2',
+        },
+        {
+          workspaceId: 2,
+          workspaceName: 'Team B',
+          boardId: 3,
+          boardName: 'Board B1',
+        },
+        {
+          workspaceId: 3,
+          workspaceName: 'Team C',
+          boardId: null,
+          boardName: null,
+        }, // Không có board nào
+      ]);
+    });
   });
 });

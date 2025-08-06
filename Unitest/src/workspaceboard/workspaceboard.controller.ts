@@ -10,4 +10,8 @@ export class WorkspaceboardController {
   getSingleJoinedData() {
     return this.workspaceboardService.joinBoardWithWorkspace;
   }
+
+  getSingleleftJoinedData() {
+    return this.workspaceboardService.leftjoinBoardWithWorkspace;
+  }
 }
