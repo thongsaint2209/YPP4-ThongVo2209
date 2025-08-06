@@ -87,7 +87,7 @@ export class WorkspaceboardService {
     return result;
   }
 
-  joinWorkspaceWithBoards(workspaces: Workspace[], boards: Board[]) {
+  leftjoinWorkspaceWithBoards(workspaces: Workspace[], boards: Board[]) {
     const result: {
       workspaceId: number;
       workspaceName: string;

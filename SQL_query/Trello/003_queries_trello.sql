@@ -442,4 +442,94 @@ WHERE b.WorkspaceId = 1
 
 
 
+-- Select all Custom Field of board 
+SELECT cf.Id, cf.title, cf.DataTypeId
+FROM CustomFields cf
+WHERE cf.BoardId = 1
 
+-- Select all Custom Field of board with value
+SELECT cf.Id, cf.title, cf.DataTypeId, fv.FieldValue, fi.FieldItemValue
+FROM CustomFields cf
+JOIN FieldValues fv ON fv.CustomFieldId = cf.Id
+LEFT JOIN FieldItems fi ON fi.Id= TRY_CAST(fv.FieldValue AS INT) AND cf.DataTypeId = 1
+WHERE cf.BoardId = 1
+
+-- Select all option of 1 Custom Field (=dropdown)
+SELECT cf.Id, cf.DataTypeId, cf.Title, fi.FieldItemValue
+FROM CustomFields cf
+JOIN FieldItems fi ON fi.CustomFieldId= cf.Id AND cf.DataTypeId = 1
+WHERE cf.BoardId = 491 AND cf.Id = 1
+
+- xx0. Show all custom field of specific card
+SELECT 
+    csf.Id CustomFieldId,
+    csf.Title CustomFieldName,
+    cgr.CategoryName,
+    csf.Position CustomFieldPosition,
+    crd.Id CardId,
+    brd.Id BoardId
+FROM CustomFields csf 
+JOIN Categories cgr ON cgr.Id = csf.CategoryId 
+JOIN Boards brd ON brd.Id = csf.BoardId
+JOIN Stages stg ON stg.BoardId = brd.Id
+JOIN Cards crd ON crd.StageId = stg.Id
+WHERE crd.Id = 1
+ORDER BY csf.Position
+
+-- Show custom field WITH DROPDOWN TYPE and their field value of specific card
+WITH FieldValuesWithCast AS(
+    SELECT 
+        Id,
+        TRY_CAST(FieldValue AS INT) FieldValue,
+        CustomFieldId,
+        CardId
+    FROM FieldValues
+)
+SELECT 
+    ctf.Id CustomFieldId,
+    ctf.Title CustomFieldTitle,
+    ftm.FieldItemValue,
+    ctf.Position CustomFieldPosition,
+    cgr.CategoryName,
+    fvl.CardId
+FROM CustomFields ctf
+JOIN FieldValuesWithCast fvl ON fvl.CustomFieldId = ctf.Id
+JOIN FieldItems ftm ON ftm.Id = fvl.FieldValue
+JOIN Categories cgr ON cgr.Id = ctf.CategoryId
+WHERE CategoryName = 'DROPDOWN'
+ORDER BY ctf.Position
+
+
+-- Show custom field without dropdown type and their field value of specific card 
+SELECT 
+    ctf.Id CustomFieldId,
+    ctf.Title CustomFieldTitle,
+    fvl.FieldValue,
+    cgr.CategoryName,
+    ctf.Position CustomFieldPosition,
+    crd.Id CardId,
+    brd.Id BoardId
+FROM CustomFields ctf
+LEFT JOIN FieldValues fvl ON fvl.CustomFieldId = ctf.Id
+LEFT JOIN Cards crd ON crd.Id = fvl.CardId
+JOIN Categories cgr ON cgr.Id = ctf.CategoryId
+JOIN CategoryTypes ctt ON ctt.Id = cgr.CategoryTypeId
+JOIN Stages stg ON stg.Id = crd.StageId
+JOIN Boards brd ON brd.Id = stg.BoardId
+WHERE CategoryName != 'DROPDOWN' AND ctt.CategoryTypeValue = 'DataTypes' AND brd.Id = 1 AND crd.Id = 1
+ORDER BY ctf.Position
+
+-- Show options of custom field with dropdown type of specific board
+SELECT 
+    ctf.Id,
+    ctf.Title,
+    ftm.Id,
+    ftm.FieldItemValue,
+    cgr.CategoryName,
+    ctf.Position,
+    ctf.BoardId
+FROM CustomFields ctf
+JOIN FieldItems ftm ON ftm.CustomFieldId = ctf.Id
+JOIN Categories cgr ON cgr.Id = ctf.CategoryId
+WHERE ctf.BoardId = 2 AND cgr.CategoryName = 'DROPDOWN'
+ORDER BY ctf.Position
