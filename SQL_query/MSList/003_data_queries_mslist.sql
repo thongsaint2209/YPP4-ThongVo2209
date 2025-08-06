@@ -90,7 +90,7 @@ ORDER BY lr.Id, ldc.Id
 
 -- paging 
 DECLARE @PageSize INT = 10; -- so luong dong muon lay moi trang, lay 10 dong tiep theo
-DECLARE @PageIndex INT = 1; -- Không b? dòng nào (l?y t? ??u) (page 1)
+DECLARE @PageIndex INT = 1 ; -- Khong bo dong nao (lay tu dau) (page 1)
 
 SELECT
     tcol.Id AS colId,
@@ -104,10 +104,8 @@ FROM
 JOIN SystemDataType sdt ON sdt.Id = tcol.SystemDataTypeId
 JOIN TemplateSampleCell tcell ON tcol.Id = tcell.TemplateColumnId
 JOIN TemplateSampleRow trow ON tcell.TemplateSampleRowId = trow.Id
-WHERE 
-    tcol.ListTemplateId = 1
-ORDER BY 
-    tcol.DisplayOrder
+WHERE tcol.ListTemplateId = 1
+ORDER BY tcol.DisplayOrder
 OFFSET (@PageIndex - 1) * @PageSize ROWS -- (bo qua 0 dong dau tien) 
 FETCH NEXT @PageSize ROWS ONLY; -- lay dong tu 1 -> 10
 

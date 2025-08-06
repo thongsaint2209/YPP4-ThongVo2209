@@ -440,3 +440,6 @@ JOIN Boards b ON b.Id = bc.BoardId
 JOIN Collections co ON co.Id = bc.CollectionId
 WHERE b.WorkspaceId = 1
 
+
+
+
