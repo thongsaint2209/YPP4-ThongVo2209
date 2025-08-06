@@ -8,6 +8,6 @@ export class WorkspaceboardController {
 
   @Get('join-one')
   getSingleJoinedData() {
-    return this.workspaceboardService.getSingleJoin();
+    return this.workspaceboardService.joinBoardWithWorkspace;
   }
 }
