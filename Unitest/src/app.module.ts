@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { WorkspaceModule } from './workspace/workspace.module';
-import { WorkspaceboardModule } from './workspaceboard/workspaceboard.module';
+import { DatabaseFunctionModule } from './databasefunction/databasefunction.module';
 
 @Module({
-  imports: [WorkspaceModule, WorkspaceboardModule],
+  imports: [WorkspaceModule, DatabaseFunctionModule],
   controllers: [AppController],
   providers: [AppService],
 })
