@@ -1,13 +1,13 @@
 // workspaceboard.controller.ts
 import { Controller, Get } from '@nestjs/common';
-import { WorkspaceboardService } from './workspaceboard.service';
+import { WorkspaceService } from './workspace.service';
 
-@Controller('workspaceboard')
-export class WorkspaceboardController {
-  constructor(private readonly workspaceboardService: WorkspaceboardService) {}
+@Controller('workspace')
+export class WorkspaceController {
+  constructor(private readonly workspaceboardService: WorkspaceService) {}
 
   @Get('join-one')
   getSingleJoinedData() {
-    return this.workspaceboardService.getSingleJoin();
+    return this.workspaceboardService.create;
   }
 }
