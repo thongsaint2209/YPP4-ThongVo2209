@@ -4,10 +4,15 @@ import { WorkspaceService } from './workspace.service';
 
 @Controller('workspace')
 export class WorkspaceController {
-  constructor(private readonly workspaceboardService: WorkspaceService) {}
+  constructor(private readonly workspaceService: WorkspaceService) {}
 
-  @Get('join-one')
-  getSingleJoinedData() {
-    return this.workspaceboardService.create;
+  @Get('createWorkspace')
+  getCreateWorkspace() {
+    return this.workspaceService.create;
+  }
+
+  @Get('updateWorkspace')
+  getUpdateWorkspace() {
+    return this.workspaceService.update;
   }
 }

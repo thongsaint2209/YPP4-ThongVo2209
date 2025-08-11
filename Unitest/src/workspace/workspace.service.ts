@@ -105,13 +105,21 @@ export class WorkspaceService {
     return updated;
   }
 
+  getById(id: number): Workspace | null {
+    const found = this.mockData.find((ws) => ws.id === id);
+    return found || null;
+  }
+
   // DELETE
   delete(id: number): boolean {
     const sql = `DELETE FROM Workspaces WHERE Id = ${id}`;
     console.log('🟢 SQL EXECUTED:', sql);
 
-    const lengthBefore = this.mockData.length;
-    this.mockData = this.mockData.filter((ws) => ws.id !== id);
-    return this.mockData.length < lengthBefore;
+    const index = this.mockData.findIndex((ws) => ws.id === id);
+    if (index !== -1) {
+      this.mockData.splice(index, 1);
+      return true;
+    }
+    return false;
   }
 }
