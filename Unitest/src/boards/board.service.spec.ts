@@ -1,68 +1,49 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BoardService } from './board.service';
-import { Board } from './entities/board.entity';
+import { BoardRepository } from './board.repository';
+import { CreateBoardDto } from './dto/create-board.dto';
 
-describe('BoardService - create() & update()', () => {
+describe('BoardService - create()', () => {
   let boardService: BoardService;
+  let boardRepository: BoardRepository;
 
   beforeEach(async () => {
+    const mockBoardRepository = {
+      create: jest.fn((data) => ({
+        id: 1,
+        title: data.title,
+        workspaceName: data.workspaceName,
+      })),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
-      providers: [BoardService],
+      providers: [
+        BoardService,
+        { provide: BoardRepository, useValue: mockBoardRepository },
+      ],
     }).compile();
 
     boardService = module.get<BoardService>(BoardService);
-
-    // Reset dữ liệu mỗi lần test
-    boardService.mockData = [];
-    boardService.nextId = 1;
+    boardRepository = module.get<BoardRepository>(BoardRepository);
   });
 
-  // ✅ Create a new board
   it('should create a board successfully', () => {
-    const input = {
-      boardName: 'Project Board',
-      boardDescription: 'Description of project board',
-      workspaceId: 1,
-      createdBy: 1001,
-      backgroundUrl: 'https://example.com/bg.png',
+    const dto: CreateBoardDto = {
+      title: 'Project Board',
+      workspaceName: 'Workspace A',
     };
 
-    const result = boardService.create(input);
+    const result = boardService.create(dto);
 
-    expect(result).toHaveProperty('id');
-    expect(result.boardName).toBe(input.boardName);
-    expect(result.boardDescription).toBe(input.boardDescription);
-    expect(result.workspaceId).toBe(input.workspaceId);
-    expect(result.createdBy).toBe(input.createdBy);
-    expect(result.backgroundUrl).toBe(input.backgroundUrl);
-    expect(boardService.findAll().length).toBe(1);
-  });
-
-  // ✅ Update board
-  it('should update a board successfully', () => {
-    // Step 1: Create board
-    boardService.create({
-      boardName: 'Old Board',
-      boardDescription: 'Old description',
-      workspaceId: 1,
-      createdBy: 1001,
-      backgroundUrl: 'https://old.com/bg.png',
+    // Kiểm tra repository.create được gọi đúng tham số
+    expect(boardRepository.create).toHaveBeenCalledWith({
+      title: dto.title,
+      workspaceName: dto.workspaceName,
     });
 
-    // Step 2: Update board
-    const updated = boardService.update(1, {
-      boardName: 'New Board',
-      boardDescription: 'New description',
-      backgroundUrl: 'https://new.com/bg.png',
-      updatedBy: 2002,
-    });
-
-    // Step 3: Assert
-    expect(updated).not.toBeNull();
-    expect(updated?.boardName).toBe('New Board');
-    expect(updated?.boardDescription).toBe('New description');
-    expect(updated?.backgroundUrl).toBe('https://new.com/bg.png');
-    expect(updated?.updatedBy).toBe(2002);
-    expect(updated?.updatedAt).toBeInstanceOf(Date);
+    // Kiểm tra kết quả trả về
+    expect(result).toHaveProperty('id', 1);
+    expect(result.title).toBe(dto.title);
+    expect(result.workspaceName).toBe(dto.workspaceName);
   });
 });

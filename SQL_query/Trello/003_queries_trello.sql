@@ -1,11 +1,11 @@
 ﻿-- 
 -- recently viewed boards
 -- Get 4 recently viewed boards by user(id=1) (Slide 4)
-SELECT TOP 4 b.Id, b.BoardName, b.BackgroundUrl
-FROM Boards b
-JOIN UserViewHistories uvh ON uvh.OwnerId = b.Id AND uvh.CategoryId = 2 -- ObjectId(id cho type thuộc Category do)
-JOIN Users u ON u.Id = uvh.UserId
-WHERE uvh.UserId = 1
+SELECT TOP 4 brd.Id, brd.BoardName, brd.BackgroundUrl, uvh.AccessedAt
+FROM Board brd
+JOIN UserViewHistory uvh ON uvh.OwnerId = brd.Id 
+JOIN OwnerType owt ON owt.Id = uvh.OwnerTypeId
+WHERE uvh.UserId = 5 AND owt.OwnerTypeValue = 'BOARD'
 ORDER BY uvh.AccessedAt DESC;
 
 -- Workspace, Member
@@ -28,11 +28,10 @@ WHERE u.Id = 1 AND c.CategoryName = 'BOARD'
 
 -- Board Starred
 -- Get the all starred boards by the user(id=8). (Slide 4)
-SELECT b.Id, b.BoardName
-FROM Boards b
-JOIN UserViewHistories uvh ON uvh.OwnerId = b.Id AND uvh.CategoryId = 2 -- ObjectId(id cho type thuộc Category do)
-JOIN Users u ON uvh.UserId = u.Id
-JOIN UserStarredBoards usb ON usb.BoardId = b.Id
+SELECT b.Id, b.BoardName, usb.StarredBoardsStatus, usb.CreatedAt
+FROM Board b
+JOIN User u ON uvh.UserId = u.Id
+JOIN UserStarredBoard usb ON usb.BoardId = b.Id
 WHERE u.Id = 1 AND usb.StarredBoardsStatus = 1
 
 -- Template

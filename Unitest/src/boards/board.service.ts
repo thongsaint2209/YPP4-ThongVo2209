@@ -1,5 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Board } from './entities/board.entity';
+import { BoardRepository } from './board.repository';
+import { CreateBoardDto } from './dto/create-board.dto';
 
 @Injectable()
 export class BoardService {
@@ -24,31 +26,13 @@ export class BoardService {
     this._nextId = id;
   }
 
-  // CREATE
-  create(data: Omit<Board, 'id' | 'createdAt'>): Board {
-    const now = new Date();
+  constructor(private readonly boardRepository: BoardRepository) {}
 
-    const sql = `
-      INSERT INTO Boards (BoardName, BoardDescription, WorkspaceId, CreatedAt, CreatedBy, BackgroundUrl, BoardStatus)
-      VALUES ('${data.boardName}', '${data.boardDescription}', ${data.workspaceId}, '${now.toISOString()}', ${data.createdBy}, '${data.backgroundUrl}', '${data.boardStatus}')
-    `;
-    console.log('🟢 SQL EXECUTED:', sql);
-
-    const newBoard = new Board(
-      this._nextId++,
-      data.boardName,
-      data.boardDescription,
-      data.workspaceId,
-      now,
-      data.createdBy,
-      data.backgroundUrl,
-      data.boardStatus,
-      null,
-      null,
-    );
-
-    this._mockData.push(newBoard);
-    return newBoard;
+  create(createBoardDto: CreateBoardDto) {
+    return this.boardRepository.create({
+      title: createBoardDto.title, // map field dto → repo
+      workspaceName: createBoardDto.workspaceName,
+    });
   }
 
   // READ ALL
@@ -66,45 +50,45 @@ export class BoardService {
     return this._mockData.find((b) => b.id === id) ?? null;
   }
 
-  // UPDATE
-  update(id: number, data: Partial<Board>): Board | null {
-    const now = new Date();
+  // // UPDATE
+  // update(id: number, data: Partial<Board>): Board | null {
+  //   const now = new Date();
 
-    const index = this._mockData.findIndex((b) => b.id === id);
-    if (index === -1) return null;
+  //   const index = this._mockData.findIndex((b) => b.id === id);
+  //   if (index === -1) return null;
 
-    const current = this._mockData[index];
+  //   const current = this._mockData[index];
 
-    const sql = `
-      UPDATE Boards
-      SET
-        BoardName = '${data.boardName ?? current.boardName}',
-        BoardDescription = '${data.boardDescription ?? current.boardDescription}',
-        WorkspaceId = ${data.workspaceId ?? current.workspaceId},
-        UpdatedAt = '${now.toISOString()}',
-        UpdatedBy = ${data.updatedBy ?? current.updatedBy},
-        BackgroundUrl = '${data.backgroundUrl ?? current.backgroundUrl}',
-        BoardStatus = '${data.boardStatus ?? current.boardStatus}'
-      WHERE Id = ${id};
-    `;
-    console.log('🟢 SQL EXECUTED:', sql);
+  //   const sql = `
+  //     UPDATE Boards
+  //     SET
+  //       BoardName = '${data.boardName ?? current.boardName}',
+  //       BoardDescription = '${data.boardDescription ?? current.boardDescription}',
+  //       WorkspaceId = ${data.workspaceId ?? current.workspaceId},
+  //       UpdatedAt = '${now.toISOString()}',
+  //       UpdatedBy = ${data.updatedBy ?? current.updatedBy},
+  //       BackgroundUrl = '${data.backgroundUrl ?? current.backgroundUrl}',
+  //       BoardStatus = '${data.boardStatus ?? current.boardStatus}'
+  //     WHERE Id = ${id};
+  //   `;
+  //   console.log('🟢 SQL EXECUTED:', sql);
 
-    const updated = new Board(
-      current.id,
-      data.boardName ?? current.boardName,
-      data.boardDescription ?? current.boardDescription,
-      data.workspaceId ?? current.workspaceId,
-      current.createdAt,
-      current.createdBy,
-      data.backgroundUrl ?? current.backgroundUrl,
-      data.boardStatus ?? current.boardStatus,
-      now,
-      data.updatedBy ?? current.updatedBy,
-    );
+  //   const updated = new Board(
+  //     current.id,
+  //     data.boardName ?? current.boardName,
+  //     data.boardDescription ?? current.boardDescription,
+  //     data.workspaceId ?? current.workspaceId,
+  //     current.createdAt,
+  //     current.createdBy,
+  //     data.backgroundUrl ?? current.backgroundUrl,
+  //     data.boardStatus ?? current.boardStatus,
+  //     now,
+  //     data.updatedBy ?? current.updatedBy,
+  //   );
 
-    this._mockData[index] = updated;
-    return updated;
-  }
+  //   this._mockData[index] = updated;
+  //   return updated;
+  // }
 
   // DELETE
   delete(id: number): boolean {
