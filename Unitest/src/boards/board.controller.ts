@@ -11,8 +11,8 @@ export class BoardController {
     return this.boardService.create;
   }
 
-  @Get('updateWorkspace')
-  getUpdateWorkspace() {
-    return this.boardService.update;
-  }
+  // @Get('updateWorkspace')
+  // getUpdateWorkspace() {
+  //   return this.boardService.update;
+  // }
 }

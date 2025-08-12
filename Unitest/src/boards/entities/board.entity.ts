@@ -2,8 +2,8 @@ export class Board {
   constructor(
     public id: number,
     public boardName: string,
-    public boardDescription: string,
     public workspaceId: number,
+    public boardDescription?: string,
     public createdAt?: Date,
     public createdBy?: number,
     public backgroundUrl?: string,
