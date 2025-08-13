@@ -1,49 +1,43 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { BoardService } from './board.service';
+// board.service.spec.ts
 import { BoardRepository } from './board.repository';
-import { CreateBoardDto } from './dto/create-board.dto';
+import { BoardService } from './board.service';
+import { TestDatabaseHelper } from '../config/test-database';
 
-describe('BoardService - create()', () => {
-  let boardService: BoardService;
-  let boardRepository: BoardRepository;
+describe('BoardService.getStarredBoard', () => {
+  let dbHelper: TestDatabaseHelper;
+  let repository: BoardRepository;
+  let service: BoardService;
 
-  beforeEach(async () => {
-    const mockBoardRepository = {
-      create: jest.fn((data) => ({
-        id: 1,
-        title: data.title,
-        workspaceName: data.workspaceName,
-      })),
-    };
+  beforeAll(() => {
+    dbHelper = new TestDatabaseHelper();
+    dbHelper.connect();
+    dbHelper.createSchema();
+    dbHelper.seedTestData();
 
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        BoardService,
-        { provide: BoardRepository, useValue: mockBoardRepository },
-      ],
-    }).compile();
-
-    boardService = module.get<BoardService>(BoardService);
-    boardRepository = module.get<BoardRepository>(BoardRepository);
+    repository = new BoardRepository(dbHelper.getDb()); // truyền db vào repository
+    service = new BoardService(repository); // truyền repository vào service
   });
 
-  it('should create a board successfully', () => {
-    const dto: CreateBoardDto = {
-      title: 'Project Board',
-      workspaceName: 'Workspace A',
-    };
+  afterAll(() => {
+    dbHelper.close();
+  });
 
-    const result = boardService.create(dto);
+  it('should return only active starred boards for a given user', () => {
+    const result = service.getStarredBoard(1);
 
-    // Kiểm tra repository.create được gọi đúng tham số
-    expect(boardRepository.create).toHaveBeenCalledWith({
-      title: dto.title,
-      workspaceName: dto.workspaceName,
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      UserId: 1,
+      BoardId: 1,
+      BoardName: 'Test Board 1',
+      BackgroundUrl: 'url1',
+      BoardStatus: 'active',
+      StarredBoardsStatus: 1,
     });
+  });
 
-    // Kiểm tra kết quả trả về
-    expect(result).toHaveProperty('id', 1);
-    expect(result.title).toBe(dto.title);
-    expect(result.workspaceName).toBe(dto.workspaceName);
+  it('should return empty array if user has no active starred boards', () => {
+    const result = service.getStarredBoard(999);
+    expect(result).toEqual([]);
   });
 });
