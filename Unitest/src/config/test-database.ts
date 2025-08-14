@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3';
+import Database from 'sqlite';
 
 export class TestDatabaseHelper {
   private db: ReturnType<typeof Database>; // 👈 Lấy type từ hàm tạo
