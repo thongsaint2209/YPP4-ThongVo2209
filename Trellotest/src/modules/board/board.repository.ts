@@ -5,6 +5,8 @@ import { StarredBoardDto } from './dto/starred-board.dto';
 import { Board } from '../../entities/board.entity';
 import { RecentlyBoardDto } from './dto/recently-board.dto';
 import { BoardUserIsMemberDto } from './dto/board-user-is-member.dto';
+import { BoardUserIsOwnerOfWorkspaceDto } from './dto/board-user-is-owner-of-workspace.dto';
+import { StageOfBoardDto } from './dto/stage-of-board.dto';
 
 @Injectable()
 export class BoardRepository {
@@ -13,27 +15,26 @@ export class BoardRepository {
     private readonly boardRepository: Repository<Board>,
   ) {}
 
-  async getStarredBoards(userId: number): Promise<StarredBoardDto[]> {
-    return await this.boardRepository.query(
-      `SELECT
+  getStarredBoards(userId: number): Promise<StarredBoardDto[]> {
+    const sql = `
+        SELECT
           usb.UserId,
           brd.Id AS BoardId,
           brd.BackgroundUrl,
           brd.BoardName,
           brd.BoardStatus,
           usb.StarredBoardsStatus
-       FROM UserStarredBoard usb
-       JOIN Board brd ON brd.Id = usb.BoardId
-       WHERE usb.UserId = ?
-         AND brd.BoardStatus = 'active'
-       ORDER BY usb.CreatedAt DESC`,
-      [userId],
-    );
+        FROM UserStarredBoard usb
+        JOIN Board brd ON brd.Id = usb.BoardId
+        WHERE usb.UserId = ?
+        AND brd.BoardStatus = 'active'
+        ORDER BY usb.CreatedAt DESC`;
+
+    return this.boardRepository.query(sql, [userId]);
   }
 
-  async getRecentlyBoardsByUser(userId: number): Promise<RecentlyBoardDto[]> {
-    const query: RecentlyBoardDto[] = await this.boardRepository.query(
-      `
+  getRecentlyBoardsByUser(userId: number): Promise<RecentlyBoardDto[]> {
+    const sql = `
       SELECT 
           brd.Id,
           uvh.UserId,
@@ -45,36 +46,75 @@ export class BoardRepository {
       JOIN Board brd ON brd.Id = uvh.OwnerId
       JOIN OwnerType owt ON owt.Id = uvh.OwnerTypeId
       WHERE uvh.UserId = ?
-        AND owt.OwnerTypeValue = 'BOARD'
-        AND brd.BoardStatus = 'active'
+      AND owt.OwnerTypeValue = 'BOARD'
+      AND brd.BoardStatus = 'active'
       ORDER BY uvh.AccessedAt DESC
       LIMIT 4
-      `,
-      [userId],
-    );
+      `;
 
-    return query;
+    return this.boardRepository.query(sql, [userId]);
   }
 
-  async getBoardsUserIsMember(userId: number): Promise<BoardUserIsMemberDto[]> {
-    const query: BoardUserIsMemberDto[] = await this.boardRepository.query(
-      `
-        SELECT 
-              brd.Id AS BoardId, 
-              brd.BoardName AS BoardName, 
-              brd.BackgroundUrl,
-              wsp.WorkspaceName AS WorkspaceName 
-        FROM Board brd
-        JOIN Members mbr ON mbr.OwnerId = brd.Id
-        JOIN OwnerType owt ON owt.Id = mbr.OwnerTypeId
-        JOIN Workspace wsp ON brd.WorkspaceId = wsp.Id
-        JOIN [User] usr ON mbr.UserId = usr.Id
-        WHERE usr.Id = 1 AND owt.OwnerTypeValue = 'BOARD'
-        ORDER BY brd.CreatedAt;
-      `,
-      [userId],
-    );
+  getBoardsWhereUserIsMemberOfWorkspace(
+    userId: number,
+    workspaceId: number,
+  ): Promise<BoardUserIsMemberDto[]> {
+    const sql = `
+      SELECT 
+        brd.Id AS BoardId, 
+        brd.BoardName AS BoardName, 
+        wsp.WorkspaceName AS WorkspaceName, 
+        brd.BackgroundUrl
+      FROM Board brd
+      JOIN Members mbr ON mbr.OwnerId = brd.Id
+      JOIN OwnerType owt ON owt.Id = mbr.OwnerTypeId
+      JOIN Workspace wsp ON brd.WorkspaceId = wsp.Id
+      JOIN Users usr ON mbr.UserId = usr.Id
+      WHERE usr.Id = ? AND owt.OwnerTypeValue = 'BOARD' AND wsp.Id = ?
+      ORDER BY brd.CreatedAt;
+      `;
 
-    return query;
+    return this.boardRepository.query(sql, [userId, workspaceId]);
+  }
+
+  getBoardsWhereUserIsOwnerOfWorkspace(
+    userId: number,
+    workspaceId: number,
+  ): Promise<BoardUserIsOwnerOfWorkspaceDto[]> {
+    const sql = `
+        SELECT 
+          brd.Id BoardId, 
+          brd.BoardName, 
+          brd.BackgroundUrl, 
+          wsp.Id WorkspaceId, 
+          wsp.WorkspaceName, 
+          brd.CreatedBy, 
+          brd.CreatedAt
+        FROM Board brd
+        JOIN Members meb ON meb.OwnerId = brd.Id
+        JOIN Workspace wsp ON wsp.Id = brd.WorkspaceId
+        JOIN OwnerType owt ON owt.Id = meb.OwnerTypeId
+        WHERE owt.OwnerTypeValue = 'BOARD' AND brd.CreatedBy = meb.UserId AND meb.UserId = ? AND wsp.Id = ?
+        ORDER BY brd.CreatedAt
+      `;
+
+    return this.boardRepository.query(sql, [userId, workspaceId]);
+  }
+  getStagesofBoard(boardId: number): Promise<StageOfBoardDto[]> {
+    const sql = `
+        SELECT 
+          brd.BoardName, 
+          stg.Id AS StageId, 
+          stg.Title AS StageTitle, 
+          stg.Position, 
+          clr.ColorName
+        FROM Stage stg
+        JOIN Board brd ON brd.Id = stg.BoardId
+        JOIN Color clr ON clr.Id = stg.ColorId
+        WHERE brd.Id = ?
+        ORDER BY stg.Position
+      `;
+
+    return this.boardRepository.query(sql, [boardId]);
   }
 }

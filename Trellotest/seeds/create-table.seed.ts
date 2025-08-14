@@ -2,98 +2,572 @@ import { DataSource } from 'typeorm';
 
 export async function createTables(dataSource: DataSource): Promise<void> {
   console.log('Creating all tables...');
-
+  const tables = [
+    'Users',
+    'WorkspaceType',
+    'Workspace',
+    'Board',
+    'Color',
+    'Stage',
+    'CardCoverType',
+    'Cards',
+    'Labels',
+    'CardLabel',
+    'AttachmentType',
+    'Attachment',
+    'CheckList',
+    'RolePermission',
+    'OwnerType',
+    'Members',
+    'CheckListItem',
+    'Comment',
+    'DataType',
+    'CustomField',
+    'FieldItem',
+    'FieldValue',
+    'Collections',
+    'BoardCollection',
+    'PowerUpCategory',
+    'PowerUp',
+    'BoardPowerUp',
+    'StickerCategory',
+    'Sticker',
+    'CardSticker',
+    'ReactionCategory',
+    'Reaction',
+    'CommentReaction',
+    'Activity',
+    'Notification',
+    'ShareLink',
+    'UserStarredBoard',
+    'UserViewHistory',
+    'WorkspaceMembershipDomain',
+    'TemplateCategory',
+    'Template',
+    'SettingOption',
+    'SettingKey',
+    'SettingKeySettingOption',
+    'SettingValue',
+    'BillingPlan',
+    'BillingContact',
+    'PaymentInformation',
+    'Subscription',
+    'Export',
+  ];
   try {
-    // --- Drop tables nếu đã tồn tại ---
-    await dataSource.query('DROP TABLE IF EXISTS UserStarredBoard');
-    await dataSource.query('DROP TABLE IF EXISTS UserViewHistory');
-    await dataSource.query('DROP TABLE IF EXISTS WorkspaceMembershipDomain');
-    await dataSource.query('DROP TABLE IF EXISTS WorkspaceType');
-    await dataSource.query('DROP TABLE IF EXISTS Workspace');
-    await dataSource.query('DROP TABLE IF EXISTS User');
-    await dataSource.query('DROP TABLE IF EXISTS TemplateCategory');
-    await dataSource.query('DROP TABLE IF EXISTS Template');
-    await dataSource.query('DROP TABLE IF EXISTS Subscription');
-    await dataSource.query('DROP TABLE IF EXISTS StickerCategory');
-    await dataSource.query('DROP TABLE IF EXISTS Sticker');
-    await dataSource.query('DROP TABLE IF EXISTS Stage');
-    await dataSource.query('DROP TABLE IF EXISTS ShareLink');
-    await dataSource.query('DROP TABLE IF EXISTS SettingValue');
-    await dataSource.query('DROP TABLE IF EXISTS SettingOption');
-    await dataSource.query('DROP TABLE IF EXISTS SettingKeySettingOption');
-    await dataSource.query('DROP TABLE IF EXISTS SettingKey');
-    await dataSource.query('DROP TABLE IF EXISTS RolePermission');
-    await dataSource.query('DROP TABLE IF EXISTS ReactionCategory');
-    await dataSource.query('DROP TABLE IF EXISTS Reaction');
-    await dataSource.query('DROP TABLE IF EXISTS PowerUpCategory');
-    await dataSource.query('DROP TABLE IF EXISTS PowerUp');
-    await dataSource.query('DROP TABLE IF EXISTS PaymentInformation');
-    await dataSource.query('DROP TABLE IF EXISTS OwnerType');
-    await dataSource.query('DROP TABLE IF EXISTS Notification');
-    await dataSource.query('DROP TABLE IF EXISTS Members');
-    await dataSource.query('DROP TABLE IF EXISTS Label');
-    await dataSource.query('DROP TABLE IF EXISTS FieldValue');
-    await dataSource.query('DROP TABLE IF EXISTS FieldItem');
-    await dataSource.query('DROP TABLE IF EXISTS DataType');
-    await dataSource.query('DROP TABLE IF EXISTS CustomField');
-    await dataSource.query('DROP TABLE IF EXISTS CommentReaction');
-    await dataSource.query('DROP TABLE IF EXISTS Comment');
-    await dataSource.query('DROP TABLE IF EXISTS Color');
-    await dataSource.query('DROP TABLE IF EXISTS Collections');
-    await dataSource.query('DROP TABLE IF EXISTS CheckListItem');
-    await dataSource.query('DROP TABLE IF EXISTS CheckList');
-    await dataSource.query('DROP TABLE IF EXISTS CardSticker');
-    await dataSource.query('DROP TABLE IF EXISTS Cards');
-    await dataSource.query('DROP TABLE IF EXISTS CardLabel');
-    await dataSource.query('DROP TABLE IF EXISTS CardCoverType');
-    await dataSource.query('DROP TABLE IF EXISTS BoardPowerUp');
-    await dataSource.query('DROP TABLE IF EXISTS BoardCollection');
-    await dataSource.query('DROP TABLE IF EXISTS Board');
-    await dataSource.query('DROP TABLE IF EXISTS BillingPlan');
-    await dataSource.query('DROP TABLE IF EXISTS BillingContact');
-    await dataSource.query('DROP TABLE IF EXISTS AttachmentType');
-    await dataSource.query('DROP TABLE IF EXISTS Attachment');
-    await dataSource.query('DROP TABLE IF EXISTS Activity');
+    console.log('>>> Dropping existing tables...');
+    for (const table of tables) {
+      await dataSource.query(`DROP TABLE IF EXISTS ${table}`);
+    }
+    console.log('>>> Tables dropped successfully!');
 
-    console.log('All existing tables dropped.');
-
-    // --- Tạo các bảng ---
+    // --- Tạo bảng Users ---
     await dataSource.query(`
-      CREATE TABLE Activity (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        CreatedAt DATETIME,
-        ActivityDescription TEXT,
-        UserId INTEGER,
-        CategoryId INTEGER,
-        OwnerId INTEGER
+      CREATE TABLE Users (
+        Id INTEGER PRIMARY KEY,
+        Username TEXT,
+        Bio TEXT,
+        Email TEXT,
+        LastActive TEXT,
+        CreatedAt TEXT,
+        UpdatedAt TEXT,
+        PictureUrl TEXT,
+        FullName TEXT
       )
     `);
 
     await dataSource.query(`
-      CREATE TABLE Attachment (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        CardId INTEGER,
-        AttachmentTypeId INTEGER,
-        AttachmentPath TEXT,
-        AttachmentName TEXT,
-        CreatedAt DATETIME,
-        CreatedBy INTEGER,
-        Size TEXT,
-        IsCover BOOLEAN
-      )
-    `);
-
-    await dataSource.query(`
-      CREATE TABLE AttachmentType (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      CREATE TABLE WorkspaceType (
+        Id INTEGER PRIMARY KEY,
         TypeValue TEXT NOT NULL,
         DisplayValue TEXT NOT NULL
       )
     `);
 
     await dataSource.query(`
+      CREATE TABLE Workspace (
+        Id INTEGER PRIMARY KEY,
+        WorkspaceName TEXT,
+        WorkspaceDescription TEXT,
+        ShortName TEXT,
+        Website TEXT,
+        TypeId INTEGER,
+        CreatedAt TEXT,
+        CreatedBy INTEGER,
+        UpdatedAt TEXT,
+        UpdatedBy INTEGER,
+        LogoUrl TEXT
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE Board (
+        Id INTEGER PRIMARY KEY,
+        BoardName TEXT,
+        BoardDescription TEXT,
+        CreatedAt TEXT,
+        CreatedBy INTEGER,
+        BackgroundUrl TEXT,
+        WorkspaceId INTEGER,
+        BoardStatus TEXT,
+        UpdatedAt TEXT,
+        UpdatedBy INTEGER,
+        IsTemplate INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE Color (
+        Id INTEGER PRIMARY KEY,
+        ColorName TEXT,
+        ColorHex TEXT,
+        Icon TEXT
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE Stage (
+        Id INTEGER PRIMARY KEY,
+        Title TEXT,
+        CreatedAt TEXT,
+        CreatedBy INTEGER,
+        BoardId INTEGER,
+        StageStatus TEXT,
+        ColorId INTEGER,
+        Position INTEGER,
+        UpdatedAt TEXT,
+        UpdatedBy INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE CardCoverType (
+        Id INTEGER PRIMARY KEY,
+        TypeValue TEXT NOT NULL,
+        DisplayValue TEXT NOT NULL
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE Cards (
+        Id INTEGER PRIMARY KEY,
+        StageId INTEGER,
+        Title TEXT,
+        CardDescription TEXT,
+        CreatedAt TEXT,
+        CreatedBy INTEGER,
+        CardStatus TEXT,
+        CardLocation TEXT,
+        StartDate TEXT,
+        DueDate TEXT,
+        CardCoverTypeId INTEGER,
+        CoverValue TEXT,
+        Position INTEGER,
+        UpdatedAt TEXT,
+        UpdatedBy INTEGER,
+        IsTemplate INTEGER,
+        IsCompleted INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE Labels (
+        Id INTEGER PRIMARY KEY,
+        Title TEXT,
+        CreatedAt TEXT,
+        CreatedBy INTEGER,
+        UpdatedAt TEXT,
+        UpdatedBy INTEGER,
+        ColorId INTEGER,
+        IsDefault INTEGER NOT NULL,
+        BoardId INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE CardLabel (
+        CardId INTEGER,
+        LabelId INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE AttachmentType (
+        Id INTEGER PRIMARY KEY,
+        TypeValue TEXT NOT NULL,
+        DisplayValue TEXT NOT NULL
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE Attachment (
+        Id INTEGER PRIMARY KEY,
+        CardId INTEGER,
+        AttachmentTypeId INTEGER,
+        AttachmentPath TEXT,
+        AttachmentName TEXT,
+        CreatedAt TEXT,
+        CreatedBy INTEGER,
+        Size TEXT,
+        IsCover INTEGER,
+        Thumbnail TEXT
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE CheckList (
+        Id INTEGER PRIMARY KEY,
+        CheckListName TEXT,
+        CardId INTEGER,
+        Position INTEGER,
+        CreatedAt TEXT,
+        CreatedBy INTEGER,
+        UpdatedAt TEXT,
+        UpdatedBy INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE RolePermission (
+        Id INTEGER PRIMARY KEY,
+        PermissionName TEXT,
+        PermissionCode TEXT
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE OwnerType (
+        Id INTEGER PRIMARY KEY,
+        OwnerTypeValue TEXT NOT NULL
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE Members (
+        Id INTEGER PRIMARY KEY,
+        UserId INTEGER,
+        RolePermissonId INTEGER,
+        OwnerTypeId INTEGER,
+        OwnerId INTEGER,
+        InvitedBy INTEGER,
+        JoinedAt TEXT,
+        MemberStatus TEXT
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE CheckListItem (
+        Id INTEGER PRIMARY KEY,
+        CheckListItemName TEXT,
+        MemberId INTEGER,
+        CheckListId INTEGER,
+        DueDate TEXT,
+        CheckListItemStatus INTEGER,
+        CreatedAt TEXT,
+        CreatedBy INTEGER,
+        UpdatedAt TEXT,
+        UpdatedBy INTEGER,
+        Position INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE Comment (
+        Id INTEGER PRIMARY KEY,
+        Content TEXT,
+        CardId INTEGER,
+        CreatedAt TEXT,
+        CreatedBy INTEGER,
+        UpdatedAt TEXT,
+        UpdatedBy INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE DataType (
+        Id INTEGER PRIMARY KEY,
+        DataTypeValue TEXT NOT NULL
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE CustomField (
+        Id INTEGER PRIMARY KEY,
+        Title TEXT,
+        DataTypeId INTEGER,
+        BoardId INTEGER,
+        CreatedAt TEXT,
+        CreatedBy INTEGER,
+        UpdatedAt TEXT,
+        UpdatedBy INTEGER,
+        Position INTEGER,
+        IsFrontCardShowed INTEGER NOT NULL
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE FieldItem (
+        Id INTEGER PRIMARY KEY,
+        ColorId INTEGER,
+        FieldItemValue TEXT,
+        Position INTEGER,
+        CustomFieldId INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE FieldValue (
+        Id INTEGER PRIMARY KEY,
+        CardId INTEGER,
+        FieldValue TEXT,
+        CustomFieldId INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE Collections (
+        Id INTEGER PRIMARY KEY,
+        CollectionName TEXT,
+        CreatedAt TEXT,
+        CreatedBy INTEGER,
+        UpdatedAt TEXT,
+        UpdatedBy INTEGER,
+        WorkspaceId INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE BoardCollection (
+        BoardId INTEGER,
+        CollectionId INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE PowerUpCategory (
+        Id INTEGER PRIMARY KEY,
+        CategoryValue TEXT NOT NULL,
+        DisplayValue TEXT NOT NULL
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE PowerUp (
+        Id INTEGER PRIMARY KEY,
+        PowerUpName TEXT,
+        IconUrl TEXT,
+        BackgroundUrl TEXT,
+        AuthorName TEXT,
+        PowerUpDescription TEXT,
+        EmailContact TEXT,
+        PolicyUrl TEXT,
+        IsStaffPick INTEGER,
+        IsIntegration INTEGER,
+        CategoryId INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE BoardPowerUp (
+        BoardId INTEGER,
+        PowerUpId INTEGER,
+        BoardPowerUpStatus INTEGER NOT NULL
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE StickerCategory (
+        Id INTEGER PRIMARY KEY,
+        CategoryValue TEXT NOT NULL,
+        DisplayValue TEXT NOT NULL
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE Sticker (
+        Id INTEGER PRIMARY KEY,
+        CategoryId INTEGER,
+        StickerName TEXT,
+        StickerUrl TEXT,
+        CreatedAt TEXT,
+        CreatedBy INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE CardSticker (
+        CardId INTEGER,
+        StickerId INTEGER,
+        CreatedAt TEXT,
+        CreatedBy INTEGER,
+        PositionX REAL,
+        PositionY REAL,
+        IndexZ INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE ReactionCategory (
+        Id INTEGER PRIMARY KEY,
+        CategoryValue TEXT NOT NULL,
+        DisplayValue TEXT NOT NULL
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE Reaction (
+        Id INTEGER PRIMARY KEY,
+        ReactionName TEXT,
+        ShortCode TEXT NOT NULL,
+        CategoryId INTEGER,
+        Icon TEXT
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE CommentReaction (
+        CommentId INTEGER,
+        ReactionId INTEGER,
+        CreatedBy INTEGER,
+        CreatedAt TEXT
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE Activity (
+        Id INTEGER PRIMARY KEY,
+        CreatedAt TEXT,
+        ActivityDescription TEXT,
+        UserId INTEGER,
+        OwnerTypeId INTEGER,
+        OwnerId INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE Notification (
+        Id INTEGER PRIMARY KEY,
+        ActivityId INTEGER,
+        IsRead INTEGER NOT NULL
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE ShareLink (
+        Id INTEGER PRIMARY KEY,
+        OwnerTypeId INTEGER,
+        RolePermissonId INTEGER,
+        OwnerId INTEGER,
+        ShareLinkToken TEXT,
+        ShareLinkStatus INTEGER NOT NULL
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE UserStarredBoard (
+        UserId INTEGER,
+        BoardId INTEGER,
+        CreatedAt TEXT,
+        StarredBoardsStatus INTEGER NOT NULL
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE UserViewHistory (
+        UserId INTEGER,
+        OwnerTypeId INTEGER,
+        OwnerId INTEGER,
+        AccessedAt TEXT
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE WorkspaceMembershipDomain (
+        Id INTEGER PRIMARY KEY,
+        WorkspaceId INTEGER,
+        Domain TEXT,
+        CreatedAt TEXT
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE TemplateCategory (
+        Id INTEGER PRIMARY KEY,
+        CategoryValue TEXT NOT NULL,
+        DisplayValue TEXT NOT NULL,
+        IconUrl TEXT
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE Template (
+        Id INTEGER PRIMARY KEY,
+        Title TEXT,
+        TemplateDescription TEXT,
+        CategoryId INTEGER,
+        Viewed INTEGER,
+        Copied INTEGER,
+        CreatedBy INTEGER,
+        CreatedAt TEXT,
+        UpdatedAt TEXT,
+        UpdatedBy INTEGER,
+        BoardId INTEGER,
+        BackgroundUrl TEXT
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE SettingOption (
+        Id INTEGER PRIMARY KEY,
+        DisplayValue TEXT,
+        SettingOptionValue TEXT
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE SettingKey (
+        Id INTEGER PRIMARY KEY,
+        KeyName TEXT,
+        SettingKeyDescription TEXT,
+        OwnerTypeId INTEGER,
+        DefaultValue INTEGER,
+        IsBoolean INTEGER NOT NULL
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE SettingKeySettingOption (
+        SettingKeyId INTEGER,
+        SettingOptionId INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE SettingValue (
+        Id INTEGER PRIMARY KEY,
+        SettingKeyId INTEGER,
+        SettingContent INTEGER,
+        CreatedAt TEXT,
+        CreatedBy INTEGER,
+        UpdatedAt TEXT,
+        UpdatedBy INTEGER,
+        OwnerId INTEGER
+      )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE BillingPlan (
+        Id INTEGER PRIMARY KEY,
+        PlanName TEXT,
+        BillingPlanDescription TEXT,
+        PricePerUser REAL,
+        IsActive INTEGER NOT NULL
+      )
+    `);
+
+    await dataSource.query(`
       CREATE TABLE BillingContact (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
+        Id INTEGER PRIMARY KEY,
         UserId INTEGER,
         WorkspaceId INTEGER,
         BillingContactName TEXT,
@@ -104,196 +578,45 @@ export async function createTables(dataSource: DataSource): Promise<void> {
     `);
 
     await dataSource.query(`
-      CREATE TABLE BillingPlan (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        PlanName TEXT,
-        BillingPlanDescription TEXT,
-        PricePerUser REAL,
-        IsActive BOOLEAN NOT NULL
-      )
-    `);
-
-    await dataSource.query(`
-      CREATE TABLE IF NOT EXISTS Workspace (
-          Id INTEGER PRIMARY KEY,
-          WorkspaceName TEXT,
-          LogoUrl TEXT,
-          CreatedAt TEXT,
-          ShortName TEXT,
-          Website TEXT,
-          WorkspaceDescription TEXT
-      );
-  `);
-
-    await dataSource.query(`
-      CREATE TABLE Board (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        BoardName TEXT,
-        BoardDescription TEXT,
-        CreatedAt DATETIME,
-        CreatedBy INTEGER,
-        BackgroundUrl TEXT,
-        WorkspaceId INTEGER,
-        BoardStatus TEXT,
-        UpdatedAt DATETIME,
-        UpdatedBy INTEGER
-      )
-    `);
-
-    // --- Tạo bảng User ---
-    await dataSource.query(`
-      CREATE TABLE User (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        Username TEXT,
-        Bio TEXT,
-        Email TEXT,
-        LastActive DATETIME,
-        CreatedAt DATETIME,
-        UpdatedAt DATETIME,
-        PictureUrl TEXT
-      )
-    `);
-
-    // --- Tạo bảng UserStarredBoard ---
-    await dataSource.query(`
-      CREATE TABLE UserStarredBoard (
-        UserId INTEGER NOT NULL,
-        BoardId INTEGER NOT NULL,
-        CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        StarredBoardsStatus BOOLEAN NOT NULL,
-        PRIMARY KEY (UserId, BoardId)
-      )
-    `);
-
-    await dataSource.query(`
-      CREATE TABLE UserViewHistory (
+      CREATE TABLE PaymentInformation (
         Id INTEGER PRIMARY KEY,
-        UserId INTEGER,
-        OwnerId INTEGER,
-        OwnerTypeId INTEGER,
-        AccessedAt TEXT
-    )
-    `);
-
-    await dataSource.query(`
-      CREATE TABLE OwnerType (
-          Id INTEGER PRIMARY KEY,
-          OwnerTypeValue TEXT
+        BillingContactId INTEGER,
+        CardNumber TEXT,
+        CardBrand TEXT,
+        ExpirationDate TEXT,
+        Cvv TEXT,
+        Country TEXT,
+        PostalCode TEXT
       )
     `);
 
     await dataSource.query(`
-    CREATE TABLE IF NOT EXISTS Members (
-      Id INTEGER PRIMARY KEY AUTOINCREMENT,
-      UserId INTEGER NOT NULL,
-      OwnerId INTEGER NOT NULL,
-      OwnerTypeId INTEGER NOT NULL
-    )
-  `);
-
-    await dataSource.query(`
-      CREATE TABLE BoardCollection (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        BoardId INTEGER,
-        CollectionId INTEGER,
-        CreatedAt DATETIME,
-        CreatedBy INTEGER
+      CREATE TABLE Subscription (
+        Id INTEGER PRIMARY KEY,
+        BillingContactId INTEGER,
+        BillingPlanId INTEGER,
+        StartDate TEXT,
+        EndDate TEXT,
+        IsMonthly INTEGER NOT NULL,
+        SubscriptionStatus INTEGER NOT NULL,
+        AutoRenew INTEGER,
+        MemberCountBilled INTEGER
       )
     `);
 
     await dataSource.query(`
-      CREATE TABLE BoardPowerUp (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        BoardId INTEGER,
-        PowerUpId INTEGER,
-        CreatedAt DATETIME,
-        CreatedBy INTEGER
-      )
-    `);
-
-    await dataSource.query(`
-      CREATE TABLE CardCoverType (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        TypeValue TEXT NOT NULL,
-        DisplayValue TEXT NOT NULL
-      )
-    `);
-
-    await dataSource.query(`
-      CREATE TABLE CardLabel (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        LabelName TEXT,
-        ColorId INTEGER
-      )
-    `);
-
-    await dataSource.query(`
-      CREATE TABLE Cards (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        CardName TEXT,
-        CardDescription TEXT,
-        CreatedAt DATETIME,
+      CREATE TABLE Export (
+        Id INTEGER PRIMARY KEY,
+        WorkspaceId INTEGER,
         CreatedBy INTEGER,
-        DueDate DATETIME,
-        CollectionId INTEGER,
-        BoardId INTEGER,
-        CardStatus TEXT
-      )
-    `);
-
-    await dataSource.query(`
-      CREATE TABLE CardSticker (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        CardId INTEGER,
-        StickerId INTEGER
-      )
-    `);
-
-    await dataSource.query(`
-      CREATE TABLE CheckList (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        CheckListName TEXT,
-        CardId INTEGER
-      )
-    `);
-
-    await dataSource.query(`
-      CREATE TABLE CheckListItem (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        CheckListId INTEGER,
-        ItemName TEXT,
-        IsChecked BOOLEAN
-      )
-    `);
-
-    await dataSource.query(`
-      CREATE TABLE Collections (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        CollectionName TEXT,
-        BoardId INTEGER
-      )
-    `);
-
-    await dataSource.query(`
-      CREATE TABLE Color (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        ColorValue TEXT NOT NULL
-      )
-    `);
-
-    await dataSource.query(`
-      CREATE TABLE Comment (
-        Id INTEGER PRIMARY KEY AUTOINCREMENT,
-        CommentText TEXT NOT NULL,
-        CreatedAt DATETIME NOT NULL DEFAULT (datetime('now')),
-        UserId INTEGER NOT NULL,
-        CardId INTEGER NOT NULL
+        CreatedAt TEXT,
+        Size INTEGER
       )
     `);
 
     console.log('>>> Tables created successfully!');
   } catch (error) {
-    console.error('>>> Error creating tables: ', error);
+    console.error('>>> Error creating tables:', error);
     throw error;
   }
 }
