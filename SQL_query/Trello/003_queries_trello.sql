@@ -28,11 +28,16 @@ WHERE u.Id = 1 AND c.CategoryName = 'BOARD'
 
 -- Board Starred
 -- Get the all starred boards by the user(id=8). (Slide 4)
-SELECT b.Id, b.BoardName, usb.StarredBoardsStatus, usb.CreatedAt
-FROM Board b
-JOIN User u ON uvh.UserId = u.Id
-JOIN UserStarredBoard usb ON usb.BoardId = b.Id
-WHERE u.Id = 1 AND usb.StarredBoardsStatus = 1
+SELECT
+    usb.UserId,
+    brd.Id BoardId,
+    brd.BackgroundUrl,
+    brd.BoardName,
+    brd.BoardStatus
+FROM UserStarredBoard usb
+JOIN Board brd ON brd.Id = usb.BoardId
+WHERE UserId = 1 AND brd.BoardStatus = 'active'
+ORDER BY usb.CreatedAt DESC;
 
 -- Template
 -- Get all template categories. (Slide 5)
