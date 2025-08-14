@@ -3,6 +3,9 @@ import { BoardRepository } from './board.repository';
 import { StarredBoardDto } from './dto/starred-board.dto';
 import { RecentlyBoardDto } from './dto/recently-board.dto';
 import { BoardUserIsMemberDto } from './dto/board-user-is-member.dto';
+import { BoardUserIsOwnerOfWorkspaceDto } from './dto/board-user-is-owner-of-workspace.dto';
+import { Workspace } from 'src/entities/workspace.entity';
+import { StageOfBoardDto } from './dto/stage-of-board.dto';
 
 @Injectable()
 export class BoardService {
@@ -16,7 +19,27 @@ export class BoardService {
     return this.boardRepository.getRecentlyBoardsByUser(userId);
   }
 
-  getBoardsUserIsMember(userId: number): Promise<BoardUserIsMemberDto[]> {
-    return this.boardRepository.getBoardsUserIsMember(userId);
+  getBoardsWhereUserIsMemberOfWorkspace(
+    userId: number,
+    workspaceId: number,
+  ): Promise<BoardUserIsMemberDto[]> {
+    return this.boardRepository.getBoardsWhereUserIsMemberOfWorkspace(
+      userId,
+      workspaceId,
+    );
+  }
+
+  getBoardsWhereUserIsOwnerOfWorkspace(
+    userId: number,
+    workspaceId: number,
+  ): Promise<BoardUserIsOwnerOfWorkspaceDto[]> {
+    return this.boardRepository.getBoardsWhereUserIsOwnerOfWorkspace(
+      userId,
+      workspaceId,
+    );
+  }
+
+  getStagesofBoard(boardId: number): Promise<StageOfBoardDto[]> {
+    return this.boardRepository.getStagesofBoard(boardId);
   }
 }

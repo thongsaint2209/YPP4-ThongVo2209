@@ -1,11 +1,11 @@
 ﻿-- 
 -- BOARDS TAB SCREEN
 -- Get Avatar User 
-SELECT usr.PictureUrl
+SELECT Id, PictureUrl
 FROM Users usr
 WHERE usr.Id = 1
 
--- Get the all starred boards by the user(id=8).
+-- Get the all starred boards by the specific user(id=8).
 SELECT usb.UserId, brd.Id BoardId, brd.BackgroundUrl, brd.BoardName, brd.BoardStatus
 FROM UserStarredBoard usb
 JOIN Board brd ON brd.Id = usb.BoardId
@@ -13,7 +13,7 @@ WHERE UserId = 1 AND brd.BoardStatus = 'active' AND usb.StarredBoardsStatus = 1
 ORDER BY usb.CreatedAt DESC;
 
 -- recently viewed boards
--- Get 4 recently viewed boards by user(id=1) 
+-- Get 4 recently viewed boards by specific user(id=1) 
 SELECT TOP 4 brd.Id, brd.BoardName, brd.BackgroundUrl, uvh.AccessedAt, brd.BoardStatus
 FROM Board brd
 JOIN UserViewHistory uvh ON uvh.OwnerId = brd.Id 
@@ -21,7 +21,7 @@ JOIN OwnerType owt ON owt.Id = uvh.OwnerTypeId
 WHERE uvh.UserId = 5 AND owt.OwnerTypeValue = 'BOARD' AND brd.BoardStatus = 'active'
 ORDER BY uvh.AccessedAt DESC;
 
--- Get all workspace that User(id=1) is member 
+-- Get all workspace that specific User(id=1) is member 
 SELECT wsp.Id WorkspaceId, wsp.WorkspaceName, wsp.LogoUrl
 FROM Workspace wsp
 JOIN Members meb ON meb.OwnerId = wsp.Id
@@ -30,7 +30,7 @@ JOIN Users usr ON usr.Id = meb.UserId
 WHERE owt.OwnerTypeValue = 'WORKSPACE' AND meb.UserId = 1
 ORDER BY wsp.CreatedAt;
 
--- Get list all board that User(i=1) is member for specific Workspace 
+-- Get list all board that specific User(i=1) is member for specific Workspace(id=1) 
 SELECT brd.Id AS BoardId, brd.BoardName AS BoardName, wsp.WorkspaceName AS WorkspaceName, brd.BackgroundUrl
 FROM Board brd
 JOIN Members mbr ON mbr.OwnerId = brd.Id
@@ -41,7 +41,7 @@ WHERE usr.Id = 1 AND owt.OwnerTypeValue = 'BOARD' AND wsp.Id = 1
 ORDER BY brd.CreatedAt;
 
 -- USER TAB SCREEN
--- Get information of a user
+-- Get information of a specific user
 SELECT Id, PictureUrl, Email, Username
 FROM Users
 WHERE Email = 'mkelly@gmail.com'
@@ -52,7 +52,7 @@ SELECT Id, TypeValue, DisplayValue
 FROM WorkspaceType;
 
 -- WORKSPACE SCREEN
--- Get all workspace that User(id=1) is member 
+-- Get all workspace that specific User(id=1) is member (R)
 SELECT wsp.Id WorkspaceId, wsp.WorkspaceName, wsp.LogoUrl
 FROM Workspace wsp
 JOIN Members meb ON meb.OwnerId = wsp.Id
@@ -61,39 +61,83 @@ JOIN Users usr ON usr.Id = meb.UserId
 WHERE owt.OwnerTypeValue = 'WORKSPACE' AND meb.UserId = 1
 ORDER BY wsp.CreatedAt;
 
---List all boards in a specific workspace, where the current user is member and owner.
-SELECT 
-    brd.Id BoardId,
-    brd.BoardName AS BoardName, 
-    brd.BackgroundUrl AS BoardBackground,
-    wo.Id WorkspaceId,
-    wo.WorkspaceName AS WorkspaceName,
-    brd.CreatedBy,
-    brd.CreatedAt
+-- Get all boards in specific Workspace(id=1) that specific user(id=1) is owner.
+SELECT brd.Id BoardId, brd.BoardName, brd.BackgroundUrl, wsp.Id WorkspaceId, wsp.WorkspaceName, brd.CreatedBy, brd.CreatedAt
 FROM Board brd
-JOIN Members me ON me.OwnerId = brd.Id
-JOIN Workspace wo ON wo.Id = brd.WorkspaceId
-JOIN OwnerType owt ON owt.Id = me.OwnerTypeId
-WHERE 
-me.UserId = 4  AND brd.CreatedBy = me.UserId AND owt.OwnerTypeValue = 'BOARD' AND wo.Id = 13
+JOIN Members meb ON meb.OwnerId = brd.Id
+JOIN Workspace wsp ON wsp.Id = brd.WorkspaceId
+JOIN OwnerType owt ON owt.Id = meb.OwnerTypeId
+WHERE owt.OwnerTypeValue = 'BOARD' AND brd.CreatedBy = meb.UserId AND meb.UserId = 1 AND wsp.Id = 2
 ORDER BY brd.CreatedAt;
 
---List all Board  that the current user is a member of belonging to a specific workspace.
-SELECT 
-    brd.Id BoardId,
-    brd.BoardName AS BoardName, 
-    brd.BackgroundUrl AS BoardBackground,
-    wo.WorkspaceName AS WorkspaceName,
-    wo.Id WorkspaceId,
-    brd.CreatedAt
+-- Get all boards in specific Workspace(id=1) that specific user(id=1) is member.(R)
+SELECT brd.Id BoardId, brd.BoardName, brd.BackgroundUrl, wsp.Id WorkspaceId, wsp.WorkspaceName, brd.CreatedBy, brd.CreatedAt
 FROM Board brd
-JOIN Members me ON me.OwnerId = brd.Id
-JOIN Workspace wo ON wo.Id = brd.WorkspaceId
-JOIN OwnerType owt ON owt.Id = me.OwnerTypeId
-WHERE me.UserId = 1 AND owt.OwnerTypeValue = 'BOARD' AND wo.Id = 1
+JOIN Members meb ON meb.OwnerId = brd.Id
+JOIN Workspace wsp ON wsp.Id = brd.WorkspaceId
+JOIN OwnerType owt ON owt.Id = meb.OwnerTypeId
+WHERE owt.OwnerTypeValue = 'BOARD' AND wsp.Id = 2 AND meb.UserId = 1
 ORDER BY brd.CreatedAt;
 
+-- Get specific Workspace that specific user is a member. (R)
+SELECT wsp.Id WorkspaceId,wsp.WorkspaceName, wsp.LogoUrl
+FROM Workspace wsp
+JOIN Members meb ON meb.OwnerId = wsp.Id
+JOIN OwnerType owt ON owt.Id = meb.OwnerTypeId
+WHERE owt.OwnerTypeValue = 'WORKSPACE' AND meb.UserId = 1 AND wsp.Id = 3
+ORDER BY wsp.CreatedAt;
 
+-- Get full infor specific Workspace that specific user is a member.
+
+-- BOARD SCREEN
+-- Get all list Stage of board(id=1) (Slide 33)
+SELECT brd.BoardName, stg.Id AS StageId, stg.Title AS StageTitle, stg.Position, clr.ColorName
+FROM Stage stg
+JOIN Board brd ON brd.Id = stg.BoardId
+JOIN Color clr ON clr.Id = stg.ColorId
+WHERE brd.Id = 1
+ORDER BY stg.Position;
+
+-- Get all card of stage(position=1) in board (id=3) (Slide 33)
+SELECT crd.Id, crd.Title
+FROM Cards crd
+JOIN Stage stg ON crd.StageId = stg.Id
+JOIN Board b ON stg.BoardId = b.Id
+WHERE stg.Position= 1 AND b.Id = 3;
+
+-- Get avatar's member in a specific board
+SELECT usr.Id UserId, usr.PictureUrl UserPicture, owt.OwnerTypeValue, mmb.OwnerId BoardId
+FROM Members mmb
+JOIN OwnerType owt ON owt.Id = mmb.OwnerTypeId
+JOIN [Users] usr ON usr.Id = mmb.UserId
+WHERE owt.OwnerTypeValue = 'BOARD' AND mmb.OwnerId = 1
+
+-- Get information card (id=219) of a stage(id=2), board(id=2) (Slide 34)
+WITH CountAttachmentCard AS (
+    SELECT CardId, COUNT(*) AS number_of_attachment
+    FROM Attachment
+    GROUP BY CardId
+),
+CountChecklistItem AS (
+    SELECT cl.CardId, COUNT(*) AS number_of_checklist_item
+    FROM CheckList cl
+    JOIN CheckListItem cli ON cli.CheckListId = cl.Id
+    GROUP BY cl.CardId
+)
+SELECT c.Id, c.Title, c.CardLocation, c.StartDate, c.DueDate, c.Position,
+    ISNULL(cac.number_of_attachment, 0) AS number_of_attachment,
+    ISNULL(ccl.number_of_checklist_item, 0) AS number_of_checklist_item,
+    col.Icon,
+    col.ColorName
+FROM Cards c
+LEFT JOIN CountAttachmentCard cac ON cac.CardId = c.Id
+LEFT JOIN CountChecklistItem ccl ON ccl.CardId = c.Id
+JOIN Stage s ON s.Id = c.StageId
+JOIN Board b ON b.Id = s.BoardId
+JOIN CardLabel cl ON cl.CardId = c.Id
+JOIN Labels l ON l.Id = cl.LabelId
+JOIN Color col ON col.Id = l.ColorId
+WHERE c.Id = 1 AND s.Id = 1 AND b.Id = 1;
 
 
 -- Template
@@ -295,44 +339,20 @@ JOIN Workspaces w ON e.WorkspaceId = w.Id
 WHERE w.Id = 1
 
 -- Board, Stage, Card
--- Get all list Stage of board(id=1) (Slide 33)
-WITH get_board AS (
-    SELECT *
-    FROM Boards b
-    WHERE b.Id = 1
-)
-SELECT s.Id AS StageId, s.Title AS StageTitle, s.Position, c.ColorName
-FROM Stages s
-JOIN get_board gb ON gb.Id = s.BoardId 
-JOIN Colors c ON c.Id = s.ColorId
-ORDER BY s.Position;
-
-SELECT s.Id AS StageId, s.Title AS StageTitle, s.Position, c.ColorName
-FROM Stages s
-JOIN Boards b ON b.Id = s.BoardId
-JOIN Colors c ON c.Id = s.ColorId
-WHERE b.Id = 1
-ORDER BY s.Position;
 
 -- Get list Stage(position=3) of board(id=1) (Slide 33)
 WITH get_board AS (
-    SELECT *
-    FROM Boards b
+    SELECT b.Id
+    FROM Board b
     WHERE b.Id = 1
 )
 SELECT s.Id AS StageId, s.Title AS StageTitle, s.Position, c.ColorName
-FROM Stages s
+FROM Stage s
 JOIN get_board gb ON gb.Id = s.BoardId 
-JOIN Colors c ON c.Id = s.ColorId
+JOIN Color c ON c.Id = s.ColorId
 WHERE s.Position = 3
 
 
--- Get all card of stage(position=1) in board (id=3) (Slide 33)
-SELECT c.Id, c.Title, c.CardDescription, c.CoverValue
-FROM Cards c
-JOIN Stages s ON c.StageId = s.Id
-JOIN Boards b ON s.BoardId = b.Id
-WHERE s.Position= 1 AND b.Id = 3;
 
 
 -- Get members in card(id=1) (Slide 33)
@@ -343,32 +363,7 @@ JOIN Cards c ON c.Id = m.OwnerId
 JOIN Users u ON u.Id = m.UserId
 WHERE ot.OwnerTypeValue = 'Card' AND c.Id = 1;
 
--- Get information card (id=219) of a stage(id=2), board(id=2) (Slide 34)
-WITH CountAttachmentCard AS (
-    SELECT CardId, COUNT(*) AS number_of_attachment
-    FROM Attachments
-    GROUP BY CardId
-),
-CountChecklistItem AS (
-    SELECT cl.CardId, COUNT(*) AS number_of_checklist_item
-    FROM CheckLists cl
-    JOIN CheckListItems cli ON cli.CheckListId = cl.Id
-    GROUP BY cl.CardId
-)
-SELECT c.Id, c.Title, c.CardLocation, c.StartDate, c.DueDate, c.Position,
-    ISNULL(cac.number_of_attachment, 0) AS number_of_attachment,
-    ISNULL(ccl.number_of_checklist_item, 0) AS number_of_checklist_item,
-    col.Icon,
-    col.ColorName
-FROM Cards c
-LEFT JOIN CountAttachmentCard cac ON cac.CardId = c.Id
-LEFT JOIN CountChecklistItem ccl ON ccl.CardId = c.Id
-JOIN Stages s ON s.Id = c.StageId
-JOIN Boards b ON b.Id = s.BoardId
-JOIN CardLabels cl ON cl.CardId = c.Id
-JOIN Labels l ON l.Id = cl.LabelId
-JOIN Colors col ON col.Id = l.ColorId
-WHERE c.Id =219 AND s.Id = 2 AND b.Id = 2;
+
  
 
 -- Get labels of card(id=1) (Slide 35)

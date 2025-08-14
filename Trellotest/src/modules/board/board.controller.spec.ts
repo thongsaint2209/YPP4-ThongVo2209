@@ -27,8 +27,10 @@ describe('BoardRepository (SQLite in-memory)', () => {
     controller = module.get<BoardController>(BoardController);
   });
   const userId = 1;
-  const OwnerTypeValue = 'WORKSPACE';
+  const workspaceId = 1;
+  const boardId = 1;
 
+  //Get the all starred boards by the specific user
   it('should return only active starred boards for user 1', async () => {
     const result = await controller.getStarredBoards(userId);
 
@@ -43,6 +45,7 @@ describe('BoardRepository (SQLite in-memory)', () => {
     });
   });
 
+  // Get 4 recently viewed boards by specific user
   it('should return only active recently boards for user 1', async () => {
     const result = await controller.getRecentlyBoardsByUser(userId);
 
@@ -52,6 +55,43 @@ describe('BoardRepository (SQLite in-memory)', () => {
     result!.forEach((board) => {
       expect(board.BoardStatus).toBe('active');
     });
+  });
+
+  // Get all boards that user is member of workspace
+  it('should return all boards that user 1 is member of workspace', async () => {
+    const result = await controller.getBoardsWhereUserIsMemberOfWorkspace(
+      userId,
+      workspaceId,
+    );
+
+    expect(result).toBeDefined();
+    expect(result.length).toBe(2);
+  });
+
+  // Get all boards that user is member of workspace that specific user is owner
+  it('should return all boards in specific Workspace(id=1) that specific user(id=1) is owner', async () => {
+    const result = await controller.getBoardsWhereUserIsOwnerOfWorkspace(
+      userId,
+      workspaceId,
+    );
+
+    expect(result).toBeDefined();
+    expect(result.length).toBe(2);
+    result.forEach((board) => {
+      expect(board.CreatedBy).toBe(userId);
+      expect(board.WorkspaceId).toBe(workspaceId);
+      expect(board.BoardId).toBeDefined();
+      expect(board.BoardName).toBeDefined();
+    });
+  });
+
+  // Get all list Stage of specific board
+  it('should return all list Stage of specific board', async () => {
+    const result = await controller.getStagesofBoard(boardId);
+    console.log(result);
+
+    expect(result).toBeDefined();
+    expect(result.length).toBe(3);
   });
 
   afterAll(async () => {
