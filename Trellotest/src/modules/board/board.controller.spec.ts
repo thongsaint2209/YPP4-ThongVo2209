@@ -33,12 +33,25 @@ describe('BoardRepository (SQLite in-memory)', () => {
 
     expect(result).toBeDefined();
     expect(result).not.toBeNull();
-    expect(result).toHaveProperty('BackgroundUrl');
-    expect(result).toHaveProperty('BoardId');
-    expect(result).toHaveProperty('BoardName');
-    expect(result).toHaveProperty('BoardStatus');
-    expect(result).toHaveProperty('StarredBoardsStatus');
-    expect(result).toHaveProperty('UserId');
+    expect(result!.length).toBe(2);
+    result!.forEach((board) => {
+      expect(board.BoardStatus).toBe('active');
+    });
+    result!.forEach((board) => {
+      expect(board.StarredBoardsStatus).toBe(1);
+    });
+  });
+
+  it('should return only active recently boards for user 1', async () => {
+    const userId = 1;
+    const result = await controller.getRecentlyBoardsByUser(userId);
+
+    expect(result).toBeDefined();
+    expect(result).not.toBeNull();
+    expect(result!.length).toBe(2);
+    result!.forEach((board) => {
+      expect(board.BoardStatus).toBe('active');
+    });
   });
 
   afterAll(async () => {
