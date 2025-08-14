@@ -5,22 +5,26 @@ export async function insertData(dataSource: DataSource): Promise<void> {
 
   try {
     // Xóa dữ liệu cũ
-    await dataSource.query('DELETE FROM UserStarredBoard');
-    await dataSource.query('DELETE FROM Board');
-    await dataSource.query('DELETE FROM UserViewHistory');
-    await dataSource.query('DELETE FROM OwnerType');
+    await dataSource.query(
+      'DELETE FROM sqlite_sequence WHERE name="Workspace"',
+    );
 
-    // Reset AUTOINCREMENT
+    await dataSource.query('DELETE FROM sqlite_sequence WHERE name="Board"');
+
+    await dataSource.query('DELETE FROM sqlite_sequence WHERE name="Members"');
+
     await dataSource.query(
       'DELETE FROM sqlite_sequence WHERE name="UserViewHistory"',
     );
     await dataSource.query(
       'DELETE FROM sqlite_sequence WHERE name="OwnerType"',
     );
-    await dataSource.query('DELETE FROM sqlite_sequence WHERE name="Board"');
+
     await dataSource.query(
       'DELETE FROM sqlite_sequence WHERE name="UserStarredBoard"',
     );
+
+    await dataSource.query('DELETE FROM sqlite_sequence WHERE name="User"');
 
     // --- Chèn dữ liệu mẫu cho Board ---
     await dataSource.query(`
@@ -29,7 +33,8 @@ export async function insertData(dataSource: DataSource): Promise<void> {
       VALUES 
         (1, 'Test Board 1', 'Description', datetime('now'), 1, 'url1', 'active', 1),
         (2, 'Test Board 2', 'Description', datetime('now'), 1, 'url2', 'active', 1),
-        (3, 'Inactive Board', 'Description', datetime('now'), 1, 'url3', 'archived', 1)
+        (3, 'Test Board 3', 'Description', datetime('now'), 1, 'url3', 'archived', 1),
+        (4, 'Test Board 4', 'Description', datetime('now'), 1, 'url3', 'archived', 1)
     `);
 
     // --- Chèn dữ liệu mẫu cho UserStarredBoard ---
@@ -66,9 +71,33 @@ export async function insertData(dataSource: DataSource): Promise<void> {
         (3, 2, 1, 2, datetime('now', '-3 day'))
     `);
 
-    console.log('>>> Board and UserStarredBoard data inserted successfully!');
+    // (OwnerTypeId = 1 => WORKSPACE)
+    // (OwnerTypeId = 2 => BOARD)
+    // (OwnerTypeId = 3 => USER)
+    // (OwnerTypeId = 4 => CARD)
+    await dataSource.query(`
+      INSERT INTO Members (UserId, OwnerId, OwnerTypeId)
+      VALUES
+        (1, 1, 1), 
+        (1, 2, 1), 
+        (2, 1, 1),
+        (1, 1, 2),  
+        (1, 2, 2), 
+        (2, 3, 2),  
+        (2, 1, 2), 
+        (3, 1, 2);  
+    `);
+
+    await dataSource.query(`
+      INSERT INTO Workspace (Id, WorkspaceName, LogoUrl, CreatedAt, ShortName, Website, WorkspaceDescription)
+      VALUES 
+        (1, 'Workspace 1', 'logo1.png', datetime('now', '-5 day'), 'WS1', 'https://workspace1.com', 'Description for Workspace 1'),
+        (2, 'Workspace 2', 'logo2.png', datetime('now', '-10 day'), 'WS2', 'https://workspace2.com', 'Description for Workspace 2')
+    `);
+
+    console.log('Data inserted successfully!');
   } catch (error) {
-    console.error('>>> Error inserting Board/UserStarredBoard data: ', error);
+    console.error('>>> Error inserting data: ', error);
     throw error;
   }
 }

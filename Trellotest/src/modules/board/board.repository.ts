@@ -33,9 +33,9 @@ export class BoardRepository {
   async getRecentlyBoardsByUser(userId: number): Promise<RecentlyBoardDto[]> {
     const query: RecentlyBoardDto[] = await this.boardRepository.query(
       `
-      SELECT
+      SELECT 
+          brd.Id,
           uvh.UserId,
-          brd.Id AS BoardId,
           brd.BoardName,
           brd.BackgroundUrl,
           uvh.AccessedAt,
@@ -47,6 +47,7 @@ export class BoardRepository {
         AND owt.OwnerTypeValue = 'BOARD'
         AND brd.BoardStatus = 'active'
       ORDER BY uvh.AccessedAt DESC
+      LIMIT 4
       `,
       [userId],
     );

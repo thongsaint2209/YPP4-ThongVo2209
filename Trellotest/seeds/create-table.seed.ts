@@ -114,6 +114,18 @@ export async function createTables(dataSource: DataSource): Promise<void> {
     `);
 
     await dataSource.query(`
+      CREATE TABLE IF NOT EXISTS Workspace (
+          Id INTEGER PRIMARY KEY,
+          WorkspaceName TEXT,
+          LogoUrl TEXT,
+          CreatedAt TEXT,
+          ShortName TEXT,
+          Website TEXT,
+          WorkspaceDescription TEXT
+      );
+  `);
+
+    await dataSource.query(`
       CREATE TABLE Board (
         Id INTEGER PRIMARY KEY AUTOINCREMENT,
         BoardName TEXT,
@@ -169,6 +181,15 @@ export async function createTables(dataSource: DataSource): Promise<void> {
           OwnerTypeValue TEXT
       )
     `);
+
+    await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS Members (
+      Id INTEGER PRIMARY KEY AUTOINCREMENT,
+      UserId INTEGER NOT NULL,
+      OwnerId INTEGER NOT NULL,
+      OwnerTypeId INTEGER NOT NULL
+    )
+  `);
 
     await dataSource.query(`
       CREATE TABLE BoardCollection (

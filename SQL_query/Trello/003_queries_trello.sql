@@ -1,11 +1,24 @@
 ﻿-- 
+-- Board Starred
+-- Get the all starred boards by the user(id=8). (Slide 4)
+SELECT
+    usb.UserId,
+    brd.Id BoardId,
+    brd.BackgroundUrl,
+    brd.BoardName,
+    brd.BoardStatus
+FROM UserStarredBoard usb
+JOIN Board brd ON brd.Id = usb.BoardId
+WHERE UserId = 1 AND brd.BoardStatus = 'active'
+ORDER BY usb.CreatedAt DESC;
+
 -- recently viewed boards
 -- Get 4 recently viewed boards by user(id=1) (Slide 4)
-SELECT TOP 4 brd.Id, brd.BoardName, brd.BackgroundUrl, uvh.AccessedAt
+SELECT TOP 4 brd.Id, brd.BoardName, brd.BackgroundUrl, uvh.AccessedAt, brd.BoardStatus
 FROM Board brd
 JOIN UserViewHistory uvh ON uvh.OwnerId = brd.Id 
 JOIN OwnerType owt ON owt.Id = uvh.OwnerTypeId
-WHERE uvh.UserId = 5 AND owt.OwnerTypeValue = 'BOARD'
+WHERE uvh.UserId = 5 AND owt.OwnerTypeValue = 'BOARD' AND brd.BoardStatus = 'active'
 ORDER BY uvh.AccessedAt DESC;
 
 -- Workspace, Member
@@ -25,19 +38,6 @@ JOIN Categories c ON m.CategoryId = c.Id
 JOIN Workspaces w ON b.WorkspaceId = w.Id
 JOIN Users u ON m.UserId = u.Id
 WHERE u.Id = 1 AND c.CategoryName = 'BOARD'
-
--- Board Starred
--- Get the all starred boards by the user(id=8). (Slide 4)
-SELECT
-    usb.UserId,
-    brd.Id BoardId,
-    brd.BackgroundUrl,
-    brd.BoardName,
-    brd.BoardStatus
-FROM UserStarredBoard usb
-JOIN Board brd ON brd.Id = usb.BoardId
-WHERE UserId = 1 AND brd.BoardStatus = 'active'
-ORDER BY usb.CreatedAt DESC;
 
 -- Template
 -- Get all template categories. (Slide 5)
