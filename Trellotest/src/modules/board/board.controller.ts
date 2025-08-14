@@ -2,7 +2,7 @@
 import { Controller, Get } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { StarredBoardDto } from './dto/starred-board.dto';
-import { RecentlyBoardDto } from './dto/reacently-board.dto';
+import { RecentlyBoardDto } from './dto/recently-board.dto';
 
 @Controller('board')
 export class BoardController {

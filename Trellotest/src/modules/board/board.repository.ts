@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { StarredBoardDto } from './dto/starred-board.dto';
 import { Board } from '../../entities/board.entity';
-import { RecentlyBoardDto } from './dto/reacently-board.dto';
+import { RecentlyBoardDto } from './dto/recently-board.dto';
 
 @Injectable()
 export class BoardRepository {
