@@ -1,19 +1,19 @@
 ﻿-- 
--- Board Starred
--- Get the all starred boards by the user(id=8). (Slide 4)
-SELECT
-    usb.UserId,
-    brd.Id BoardId,
-    brd.BackgroundUrl,
-    brd.BoardName,
-    brd.BoardStatus
+-- BOARDS TAB SCREEN
+-- Get Avatar User 
+SELECT usr.PictureUrl
+FROM Users usr
+WHERE usr.Id = 1
+
+-- Get the all starred boards by the user(id=8).
+SELECT usb.UserId, brd.Id BoardId, brd.BackgroundUrl, brd.BoardName, brd.BoardStatus
 FROM UserStarredBoard usb
 JOIN Board brd ON brd.Id = usb.BoardId
-WHERE UserId = 1 AND brd.BoardStatus = 'active'
+WHERE UserId = 1 AND brd.BoardStatus = 'active' AND usb.StarredBoardsStatus = 1
 ORDER BY usb.CreatedAt DESC;
 
 -- recently viewed boards
--- Get 4 recently viewed boards by user(id=1) (Slide 4)
+-- Get 4 recently viewed boards by user(id=1) 
 SELECT TOP 4 brd.Id, brd.BoardName, brd.BackgroundUrl, uvh.AccessedAt, brd.BoardStatus
 FROM Board brd
 JOIN UserViewHistory uvh ON uvh.OwnerId = brd.Id 
@@ -21,23 +21,80 @@ JOIN OwnerType owt ON owt.Id = uvh.OwnerTypeId
 WHERE uvh.UserId = 5 AND owt.OwnerTypeValue = 'BOARD' AND brd.BoardStatus = 'active'
 ORDER BY uvh.AccessedAt DESC;
 
--- Workspace, Member
--- Get all workspace that User(id=1) is member (Slide 4)
-SELECT w.Id, w.WorkspaceName
-FROM Workspaces w
-JOIN Members m ON m.OwnerId = w.Id
-JOIN Categories c ON m.CategoryId = c.Id
-JOIN Users u ON u.Id = m.UserId
-WHERE c.CategoryName = 'WORKSPACE' AND u.Id = 1;
+-- Get all workspace that User(id=1) is member 
+SELECT wsp.Id WorkspaceId, wsp.WorkspaceName, wsp.LogoUrl
+FROM Workspace wsp
+JOIN Members meb ON meb.OwnerId = wsp.Id
+JOIN OwnerType owt ON owt.Id = meb.OwnerTypeId
+JOIN Users usr ON usr.Id = meb.UserId
+WHERE owt.OwnerTypeValue = 'WORKSPACE' AND meb.UserId = 1
+ORDER BY wsp.CreatedAt;
 
--- Get list all board that User(i=1) is member for each Workspace (Slide 4)
-SELECT b.Id AS BoardId, b.BoardName AS BoardName, w.WorkspaceName AS WorkspaceName, b.BackgroundUrl
-FROM Boards b
-JOIN Members m ON m.OwnerId = b.Id
-JOIN Categories c ON m.CategoryId = c.Id
-JOIN Workspaces w ON b.WorkspaceId = w.Id
-JOIN Users u ON m.UserId = u.Id
-WHERE u.Id = 1 AND c.CategoryName = 'BOARD'
+-- Get list all board that User(i=1) is member for specific Workspace 
+SELECT brd.Id AS BoardId, brd.BoardName AS BoardName, wsp.WorkspaceName AS WorkspaceName, brd.BackgroundUrl
+FROM Board brd
+JOIN Members mbr ON mbr.OwnerId = brd.Id
+JOIN OwnerType owt ON owt.Id = mbr.OwnerTypeId
+JOIN Workspace wsp ON brd.WorkspaceId = wsp.Id
+JOIN Users usr ON mbr.UserId = usr.Id
+WHERE usr.Id = 1 AND owt.OwnerTypeValue = 'BOARD' AND wsp.Id = 1
+ORDER BY brd.CreatedAt;
+
+-- USER TAB SCREEN
+-- Get information of a user
+SELECT Id, PictureUrl, Email, Username
+FROM Users
+WHERE Email = 'mkelly@gmail.com'
+
+--WORKSPACE CREATE SCREEN
+--Get all workspace types
+SELECT Id, TypeValue, DisplayValue
+FROM WorkspaceType;
+
+-- WORKSPACE SCREEN
+-- Get all workspace that User(id=1) is member 
+SELECT wsp.Id WorkspaceId, wsp.WorkspaceName, wsp.LogoUrl
+FROM Workspace wsp
+JOIN Members meb ON meb.OwnerId = wsp.Id
+JOIN OwnerType owt ON owt.Id = meb.OwnerTypeId
+JOIN Users usr ON usr.Id = meb.UserId
+WHERE owt.OwnerTypeValue = 'WORKSPACE' AND meb.UserId = 1
+ORDER BY wsp.CreatedAt;
+
+--List all boards in a specific workspace, where the current user is member and owner.
+SELECT 
+    brd.Id BoardId,
+    brd.BoardName AS BoardName, 
+    brd.BackgroundUrl AS BoardBackground,
+    wo.Id WorkspaceId,
+    wo.WorkspaceName AS WorkspaceName,
+    brd.CreatedBy,
+    brd.CreatedAt
+FROM Board brd
+JOIN Members me ON me.OwnerId = brd.Id
+JOIN Workspace wo ON wo.Id = brd.WorkspaceId
+JOIN OwnerType owt ON owt.Id = me.OwnerTypeId
+WHERE 
+me.UserId = 4  AND brd.CreatedBy = me.UserId AND owt.OwnerTypeValue = 'BOARD' AND wo.Id = 13
+ORDER BY brd.CreatedAt;
+
+--List all Board  that the current user is a member of belonging to a specific workspace.
+SELECT 
+    brd.Id BoardId,
+    brd.BoardName AS BoardName, 
+    brd.BackgroundUrl AS BoardBackground,
+    wo.WorkspaceName AS WorkspaceName,
+    wo.Id WorkspaceId,
+    brd.CreatedAt
+FROM Board brd
+JOIN Members me ON me.OwnerId = brd.Id
+JOIN Workspace wo ON wo.Id = brd.WorkspaceId
+JOIN OwnerType owt ON owt.Id = me.OwnerTypeId
+WHERE me.UserId = 1 AND owt.OwnerTypeValue = 'BOARD' AND wo.Id = 1
+ORDER BY brd.CreatedAt;
+
+
+
 
 -- Template
 -- Get all template categories. (Slide 5)

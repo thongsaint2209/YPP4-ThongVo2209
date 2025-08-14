@@ -26,9 +26,10 @@ describe('BoardRepository (SQLite in-memory)', () => {
 
     controller = module.get<BoardController>(BoardController);
   });
+  const userId = 1;
+  const OwnerTypeValue = 'WORKSPACE';
 
   it('should return only active starred boards for user 1', async () => {
-    const userId = 1;
     const result = await controller.getStarredBoards(userId);
 
     expect(result).toBeDefined();
@@ -43,7 +44,6 @@ describe('BoardRepository (SQLite in-memory)', () => {
   });
 
   it('should return only active recently boards for user 1', async () => {
-    const userId = 1;
     const result = await controller.getRecentlyBoardsByUser(userId);
 
     expect(result).toBeDefined();

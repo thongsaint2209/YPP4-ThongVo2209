@@ -8,5 +8,6 @@ export class User {
     public createdAt?: Date,
     public updatedAt?: Date | null,
     public pictureUrl?: string,
+    public fullName?: string,
   ) {}
 }

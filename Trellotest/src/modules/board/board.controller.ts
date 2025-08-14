@@ -1,8 +1,9 @@
-// workspaceboard.controller.ts
+// Boardboard.controller.ts
 import { Controller, Get } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { StarredBoardDto } from './dto/starred-board.dto';
 import { RecentlyBoardDto } from './dto/recently-board.dto';
+import { BoardUserIsMemberDto } from './dto/board-user-is-member.dto';
 
 @Controller('board')
 export class BoardController {
@@ -16,5 +17,9 @@ export class BoardController {
   @Get('getRecentlyBoards')
   getRecentlyBoardsByUser(userId: number): Promise<RecentlyBoardDto[]> {
     return this.boardService.getRecentlyBoardsByUser(userId);
+  }
+  @Get('getBoardsUserIsMember')
+  getBoardsUserIsMember(userId: number): Promise<BoardUserIsMemberDto[]> {
+    return this.boardService.getBoardsUserIsMember(userId);
   }
 }
