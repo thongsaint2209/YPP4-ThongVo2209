@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { BoardRepository } from './board.repository';
 import { StarredBoardDto } from './dto/starred-board.dto';
 import { RecentlyBoardDto } from './dto/recently-board.dto';
+import { BoardUserIsMemberDto } from './dto/board-user-is-member.dto';
 
 @Injectable()
 export class BoardService {
@@ -13,5 +14,9 @@ export class BoardService {
 
   getRecentlyBoardsByUser(userId: number): Promise<RecentlyBoardDto[]> {
     return this.boardRepository.getRecentlyBoardsByUser(userId);
+  }
+
+  getBoardsUserIsMember(userId: number): Promise<BoardUserIsMemberDto[]> {
+    return this.boardRepository.getBoardsUserIsMember(userId);
   }
 }

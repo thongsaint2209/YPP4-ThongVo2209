@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { StarredBoardDto } from './dto/starred-board.dto';
 import { Board } from '../../entities/board.entity';
 import { RecentlyBoardDto } from './dto/recently-board.dto';
+import { BoardUserIsMemberDto } from './dto/board-user-is-member.dto';
 
 @Injectable()
 export class BoardRepository {
@@ -48,6 +49,28 @@ export class BoardRepository {
         AND brd.BoardStatus = 'active'
       ORDER BY uvh.AccessedAt DESC
       LIMIT 4
+      `,
+      [userId],
+    );
+
+    return query;
+  }
+
+  async getBoardsUserIsMember(userId: number): Promise<BoardUserIsMemberDto[]> {
+    const query: BoardUserIsMemberDto[] = await this.boardRepository.query(
+      `
+        SELECT 
+              brd.Id AS BoardId, 
+              brd.BoardName AS BoardName, 
+              brd.BackgroundUrl,
+              wsp.WorkspaceName AS WorkspaceName 
+        FROM Board brd
+        JOIN Members mbr ON mbr.OwnerId = brd.Id
+        JOIN OwnerType owt ON owt.Id = mbr.OwnerTypeId
+        JOIN Workspace wsp ON brd.WorkspaceId = wsp.Id
+        JOIN [User] usr ON mbr.UserId = usr.Id
+        WHERE usr.Id = 1 AND owt.OwnerTypeValue = 'BOARD'
+        ORDER BY brd.CreatedAt;
       `,
       [userId],
     );
