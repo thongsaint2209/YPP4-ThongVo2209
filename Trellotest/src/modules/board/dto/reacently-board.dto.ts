@@ -1,4 +1,4 @@
-export class StarredBoardDto {
+export class RecentlyBoardDto {
   UserId: number;
   BoardId: number;
   BoardName: string;

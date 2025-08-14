@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { StarredBoardDto } from './dto/update-board.dto';
+import { StarredBoardDto } from './dto/starred-board.dto';
 import { Board } from '../../entities/board.entity';
+import { RecentlyBoardDto } from './dto/reacently-board.dto';
 
 @Injectable()
 export class BoardRepository {
@@ -11,8 +12,8 @@ export class BoardRepository {
     private readonly boardRepository: Repository<Board>,
   ) {}
 
-  async getStarredBoards(userId: number): Promise<StarredBoardDto | null> {
-    const query: StarredBoardDto[] = await this.boardRepository.query(
+  async getStarredBoards(userId: number): Promise<StarredBoardDto[]> {
+    return await this.boardRepository.query(
       `SELECT
           usb.UserId,
           brd.Id AS BoardId,
@@ -27,7 +28,29 @@ export class BoardRepository {
        ORDER BY usb.CreatedAt DESC`,
       [userId],
     );
+  }
 
-    return query.length > 0 ? query[0] : null;
+  async getRecentlyBoardsByUser(userId: number): Promise<RecentlyBoardDto[]> {
+    const query: RecentlyBoardDto[] = await this.boardRepository.query(
+      `
+      SELECT
+          uvh.UserId,
+          brd.Id AS BoardId,
+          brd.BoardName,
+          brd.BackgroundUrl,
+          uvh.AccessedAt,
+          brd.BoardStatus
+      FROM UserViewHistory uvh
+      JOIN Board brd ON brd.Id = uvh.OwnerId
+      JOIN OwnerType owt ON owt.Id = uvh.OwnerTypeId
+      WHERE uvh.UserId = ?
+        AND owt.OwnerTypeValue = 'BOARD'
+        AND brd.BoardStatus = 'active'
+      ORDER BY uvh.AccessedAt DESC
+      `,
+      [userId],
+    );
+
+    return query;
   }
 }

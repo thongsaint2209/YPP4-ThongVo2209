@@ -154,6 +154,23 @@ export async function createTables(dataSource: DataSource): Promise<void> {
     `);
 
     await dataSource.query(`
+      CREATE TABLE UserViewHistory (
+        Id INTEGER PRIMARY KEY,
+        UserId INTEGER,
+        OwnerId INTEGER,
+        OwnerTypeId INTEGER,
+        AccessedAt TEXT
+    )
+    `);
+
+    await dataSource.query(`
+      CREATE TABLE OwnerType (
+          Id INTEGER PRIMARY KEY,
+          OwnerTypeValue TEXT
+      )
+    `);
+
+    await dataSource.query(`
       CREATE TABLE BoardCollection (
         Id INTEGER PRIMARY KEY AUTOINCREMENT,
         BoardId INTEGER,
