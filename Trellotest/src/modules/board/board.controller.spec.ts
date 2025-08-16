@@ -88,7 +88,6 @@ describe('BoardRepository (SQLite in-memory)', () => {
   // Get all list Stage of specific board
   it('should return all list Stage of specific board', async () => {
     const result = await controller.getStagesofBoard(boardId);
-    console.log(result);
 
     expect(result).toBeDefined();
     expect(result.length).toBe(3);
