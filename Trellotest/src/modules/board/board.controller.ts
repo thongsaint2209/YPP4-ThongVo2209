@@ -6,13 +6,16 @@ import { RecentlyBoardDto } from './dto/recently-board.dto';
 import { BoardUserIsMemberDto } from './dto/board-user-is-member.dto';
 import { BoardUserIsOwnerOfWorkspaceDto } from './dto/board-user-is-owner-of-workspace.dto';
 import { StageOfBoardDto } from './dto/stage-of-board.dto';
+import { IResourceWithLinks } from './board.repository';
 
 @Controller('board')
 export class BoardController {
   constructor(private readonly boardService: BoardService) {}
 
   @Get('getStarredBoards')
-  getStarredBoards(userId: number): Promise<StarredBoardDto[] | null> {
+  getStarredBoards(
+    userId: number,
+  ): Promise<IResourceWithLinks<StarredBoardDto>[]> {
     return this.boardService.getStarredBoards(userId);
   }
 
