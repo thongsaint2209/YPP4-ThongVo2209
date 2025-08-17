@@ -34,15 +34,10 @@ describe('BoardRepository with Router', () => {
   });
 
   it('should return only active starred boards for user 1', async () => {
+    const userId = 1;
     const request: Request = {
       method: 'GET',
-      path: '/boards/starred/:userId',
-      params: { userId: 1 },
-      body: {
-        name: 'Get Board Name',
-        description: 'Get description',
-        status: 'active',
-      },
+      path: `/boards/starred/${userId}`,
     };
 
     const result = await router.handleRequest(request);
