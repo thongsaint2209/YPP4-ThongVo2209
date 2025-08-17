@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BoardRepository } from './board.repository';
+import { BoardRepository, IResourceWithLinks } from './board.repository';
 import { StarredBoardDto } from './dto/starred-board.dto';
 import { RecentlyBoardDto } from './dto/recently-board.dto';
 import { BoardUserIsMemberDto } from './dto/board-user-is-member.dto';
@@ -11,7 +11,9 @@ import { StageOfBoardDto } from './dto/stage-of-board.dto';
 export class BoardService {
   constructor(private readonly boardRepository: BoardRepository) {}
 
-  getStarredBoards(userId: number): Promise<StarredBoardDto[] | null> {
+  getStarredBoards(
+    userId: number,
+  ): Promise<IResourceWithLinks<StarredBoardDto>[]> {
     return this.boardRepository.getStarredBoards(userId);
   }
 

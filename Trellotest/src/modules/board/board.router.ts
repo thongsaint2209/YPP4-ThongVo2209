@@ -1,25 +1,54 @@
-// router/Router.ts
-type RouteHandler = (params: any) => any;
+// board.router.ts
+import { BoardController } from './board.controller';
 
-interface Route {
+export interface Request {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   path: string;
-  method: 'GET' | 'POST';
-  handler: RouteHandler;
+  params?: Record<string, any>;
+  body?: any;
 }
 
-export class Router {
-  private routes: Route[] = [];
+type Handler = (req: Request) => Promise<any>;
 
-  register(path: string, method: 'GET' | 'POST', handler: RouteHandler) {
-    this.routes.push({ path, method, handler });
+export class Router {
+  private routes: Record<string, Handler> = {};
+
+  constructor(private readonly controller: BoardController) {
+    // Khai báo các routes vào dictionary
+    this.routes['GET /boards/starred/:userId'] = async (req) =>
+      this.controller.getStarredBoards(req.params?.userId);
+
+    this.routes['GET /boards/recently/:userId'] = async (req) =>
+      this.controller.getRecentlyBoardsByUser(req.params?.userId);
+
+    this.routes['GET /boards/workspace/:workspaceId/member/:userId'] = async (
+      req,
+    ) =>
+      this.controller.getBoardsWhereUserIsMemberOfWorkspace(
+        req.params?.userId,
+        req.params?.workspaceId,
+      );
+
+    this.routes['GET /boards/workspace/:workspaceId/owner/:userId'] = async (
+      req,
+    ) =>
+      this.controller.getBoardsWhereUserIsOwnerOfWorkspace(
+        req.params?.userId,
+        req.params?.workspaceId,
+      );
+
+    this.routes['GET /boards/:boardId/stages'] = async (req) =>
+      this.controller.getStagesofBoard(req.params?.boardId);
   }
 
-  // Giả lập request
-  handleRequest(path: string, method: 'GET' | 'POST', params?: any) {
-    const route = this.routes.find(
-      (r) => r.path === path && r.method === method,
-    );
-    if (!route) throw new Error('Route not found');
-    return route.handler(params);
+  async handleRequest(req: Request): Promise<any> {
+    const key = `${req.method} ${req.path}`;
+    const handler = this.routes[key];
+
+    if (!handler) {
+      throw new Error(`Route not found: [${req.method}] ${req.path}`);
+    }
+
+    return handler(req);
   }
 }

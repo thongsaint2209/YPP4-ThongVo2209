@@ -8,14 +8,19 @@ import { BoardUserIsMemberDto } from './dto/board-user-is-member.dto';
 import { BoardUserIsOwnerOfWorkspaceDto } from './dto/board-user-is-owner-of-workspace.dto';
 import { StageOfBoardDto } from './dto/stage-of-board.dto';
 
-interface CacheItem<T> {
+export interface ICacheItem<T> {
   data: T;
   expire: number;
 }
 
+export interface IResourceWithLinks<T> {
+  data: T;
+  links: Array<{ rel: string; href: string; method?: string }>;
+}
+
 @Injectable()
 export class BoardRepository {
-  private cache = new Map<string, CacheItem<any>>();
+  private cache = new Map<string, ICacheItem<any>>();
   private readonly TTL_SECONDS = 300; // 5 phút
 
   constructor(
@@ -56,28 +61,45 @@ export class BoardRepository {
   }
 
   // ------------------- Public methods -------------------
-  async getStarredBoards(userId: number): Promise<StarredBoardDto[]> {
+  async getStarredBoards(
+    userId: number,
+  ): Promise<IResourceWithLinks<StarredBoardDto>[]> {
     const sql = `
-      SELECT
-        usb.UserId,
-        brd.Id AS BoardId,
-        brd.BackgroundUrl,
-        brd.BoardName,
-        brd.BoardStatus,
-        usb.StarredBoardsStatus
-      FROM UserStarredBoard usb
-      JOIN Board brd ON brd.Id = usb.BoardId
-      WHERE usb.UserId = ?
-      AND brd.BoardStatus = 'active'
-      ORDER BY usb.CreatedAt DESC
-    `;
-    return this.queryWithCache<StarredBoardDto[]>(
+        SELECT
+          usb.UserId,
+          brd.Id AS BoardId,
+          brd.BackgroundUrl,
+          brd.BoardName,
+          brd.BoardStatus,
+          usb.StarredBoardsStatus
+        FROM UserStarredBoard usb
+        JOIN Board brd ON brd.Id = usb.BoardId
+        WHERE usb.UserId = ?
+        AND brd.BoardStatus = 'active'
+        ORDER BY usb.CreatedAt DESC
+      `;
+
+    const boards = await this.queryWithCache<StarredBoardDto[]>(
       `starredBoards:${userId}`,
       sql,
       [userId],
     );
-  }
 
+    const res = boards.map((board) => ({
+      data: board,
+      links: [
+        { rel: 'self', href: `/boards/${board.BoardId}`, method: 'GET' },
+        {
+          rel: 'unstar',
+          href: `/boards/${board.BoardId}/unstar`,
+          method: 'POST',
+        },
+        { rel: 'update', href: `/boards/${board.BoardId}`, method: 'PUT' },
+      ],
+    }));
+
+    return res;
+  }
   async getRecentlyBoardsByUser(userId: number): Promise<RecentlyBoardDto[]> {
     const sql = `
       SELECT 

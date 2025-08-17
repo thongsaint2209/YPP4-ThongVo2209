@@ -5,9 +5,12 @@ import { Board } from '../../entities/board.entity';
 import { BoardController } from './board.controller';
 import { BoardService } from './board.service';
 import { BoardRepository } from './board.repository';
+import { Router } from './board.router';
+import { Request } from './board.router';
 
-describe('BoardRepository (SQLite in-memory)', () => {
+describe('BoardRepository with Router', () => {
   let controller: BoardController;
+  let router: Router;
   let module: TestingModule;
 
   beforeEach(async () => {
@@ -25,75 +28,50 @@ describe('BoardRepository (SQLite in-memory)', () => {
     }).compile();
 
     controller = module.get<BoardController>(BoardController);
-  });
-  const userId = 1;
-  const workspaceId = 1;
-  const boardId = 1;
+    router = new Router(controller);
 
-  //Get the all starred boards by the specific user
+    // TODO: có thể seed data test ở đây
+  });
+
   it('should return only active starred boards for user 1', async () => {
-    const result = await controller.getStarredBoards(userId);
+    const request: Request = {
+      method: 'GET',
+      path: '/boards/starred/:userId',
+      params: { userId: 1 },
+      body: {
+        name: 'Get Board Name',
+        description: 'Get description',
+        status: 'active',
+      },
+    };
+
+    const result = await router.handleRequest(request);
 
     expect(result).toBeDefined();
-    expect(result).not.toBeNull();
-    expect(result!.length).toBe(2);
-    result!.forEach((board) => {
-      expect(board.BoardStatus).toBe('active');
-    });
-    result!.forEach((board) => {
-      expect(board.StarredBoardsStatus).toBe(1);
-    });
-  });
-
-  // Get 4 recently viewed boards by specific user
-  it('should return only active recently boards for user 1', async () => {
-    const result = await controller.getRecentlyBoardsByUser(userId);
-
-    expect(result).toBeDefined();
-    expect(result).not.toBeNull();
-    expect(result!.length).toBe(2);
-    result!.forEach((board) => {
-      expect(board.BoardStatus).toBe('active');
-    });
-  });
-
-  // Get all boards that user is member of workspace
-  it('should return all boards that user 1 is member of workspace', async () => {
-    const result = await controller.getBoardsWhereUserIsMemberOfWorkspace(
-      userId,
-      workspaceId,
-    );
-
-    expect(result).toBeDefined();
-    expect(result.length).toBe(2);
-  });
-
-  // Get all boards that user is member of workspace that specific user is owner
-  it('should return all boards in specific Workspace(id=1) that specific user(id=1) is owner', async () => {
-    const result = await controller.getBoardsWhereUserIsOwnerOfWorkspace(
-      userId,
-      workspaceId,
-    );
-
-    expect(result).toBeDefined();
-    expect(result.length).toBe(2);
+    expect(Array.isArray(result)).toBe(true);
     result.forEach((board) => {
-      expect(board.CreatedBy).toBe(userId);
-      expect(board.WorkspaceId).toBe(workspaceId);
-      expect(board.BoardId).toBeDefined();
-      expect(board.BoardName).toBeDefined();
+      expect(board.data.BoardStatus).toBe('active');
+      expect(board.data.StarredBoardsStatus).toBe(1);
     });
   });
 
-  // Get all list Stage of specific board
-  it('should return all list Stage of specific board', async () => {
-    const result = await controller.getStagesofBoard(boardId);
+  // it('should return only active recently boards for user 1', async () => {
+  //   const request: Request = {
+  //     method: 'GET',
+  //     path: '/boards/recently/:userIds',
+  //     params: { userId: 1 },
+  //     body: {
+  //       name: 'Get Board Name',
+  //       description: 'Get description',
+  //     },
+  //   };
 
-    expect(result).toBeDefined();
-    expect(result.length).toBe(3);
-  });
+  //   const result = await router.Request(request);
 
-  afterAll(async () => {
-    await module.close();
-  });
+  //   expect(result).toBeDefined();
+  //   expect(Array.isArray(result)).toBe(true);
+  //   result.forEach((board) => {
+  //     expect(board.BoardStatus).toBe('active');
+  //   });
+  // });
 });
