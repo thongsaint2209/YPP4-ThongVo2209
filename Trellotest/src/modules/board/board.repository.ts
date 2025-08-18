@@ -17,7 +17,8 @@ export class BoardRepository {
   ) {}
 
   async getStarredBoards(userId: number): Promise<StarredBoardDto[]> {
-    const cacheKey = `starredBoards:${userId}}`;
+    const cacheKey = `starredBoards:${userId}}`; // Cache sẽ lưu theo key này
+
     const sql = `
     SELECT
       usb.UserId,
@@ -42,7 +43,6 @@ export class BoardRepository {
   }
 
   async getRecentlyBoardsByUser(userId: number): Promise<RecentlyBoardDto[]> {
-    const cacheKey = `recentlyBoards:${userId}`;
     const sql = `
     SELECT
       brd.Id,
@@ -60,11 +60,7 @@ export class BoardRepository {
     ORDER BY uvh.AccessedAt DESC
     LIMIT 4
   `;
-    return this.cacheService.queryWithCache(
-      cacheKey,
-      () => this.boardRepository.query(sql, [userId]),
-      300, // TTL 5 phút
-    );
+    return this.boardRepository.query(sql, [userId]);
   }
 
   async getBoardsWhereUserIsMemberOfWorkspace(
@@ -122,7 +118,6 @@ export class BoardRepository {
   }
 
   async getStagesofBoard(boardId: number): Promise<StageOfBoardDto[]> {
-    const cacheKey = `stages:${boardId}`;
     const sql = `
     SELECT
       brd.BoardName,
@@ -136,10 +131,6 @@ export class BoardRepository {
     WHERE brd.Id = ?
     ORDER BY stg.Position
   `;
-    return this.cacheService.queryWithCache(
-      cacheKey,
-      () => this.boardRepository.query(sql, [boardId]),
-      300,
-    );
+    return this.boardRepository.query(sql, [boardId]);
   }
 }
