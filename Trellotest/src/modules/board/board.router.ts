@@ -4,28 +4,30 @@ import { BoardController } from './board.controller';
 export interface Request {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   path: string;
-  params?: Record<string, any>;
-  body?: any;
+  params?: Record<string, any>; // URL parameters, e.g., { UserId: '1' }
+  body?: any; // POST, PUT
 }
 
+// Handler type for request processing
 type Handler = (req: Request) => Promise<any>;
 
 interface RouteDef {
   method: string;
-  pattern: string;
-  handler: Handler;
+  pattern: string; // pattern of the route, e.g., '/boards/:boardId/stages'
+  handler: Handler; // function to handle the request
 }
 
 export class Router {
   private routes: RouteDef[] = [];
 
   constructor(private readonly controller: BoardController) {
+    //register route GET
     this.addRoute('GET', '/boards/starred/:userId', async (req) =>
-      this.controller.getStarredBoards(req.params!.userId),
+      this.controller.getStarredBoards(Number(req.params!.userId)),
     );
 
     this.addRoute('GET', '/boards/recently/:userId', async (req) =>
-      this.controller.getRecentlyBoardsByUser(req.params!.userId),
+      this.controller.getRecentlyBoardsByUser(Number(req.params!.userId)),
     );
 
     this.addRoute(
@@ -33,8 +35,8 @@ export class Router {
       '/boards/workspace/:workspaceId/member/:userId',
       async (req) =>
         this.controller.getBoardsWhereUserIsMemberOfWorkspace(
-          req.params!.userId,
-          req.params!.workspaceId,
+          Number(req.params!.userId),
+          Number(req.params!.workspaceId),
         ),
     );
 
@@ -43,25 +45,27 @@ export class Router {
       '/boards/workspace/:workspaceId/owner/:userId',
       async (req) =>
         this.controller.getBoardsWhereUserIsOwnerOfWorkspace(
-          req.params!.userId,
-          req.params!.workspaceId,
+          Number(req.params!.userId),
+          Number(req.params!.workspaceId),
         ),
     );
 
     this.addRoute('GET', '/boards/:boardId/stages', async (req) =>
-      this.controller.getStagesofBoard(req.params!.boardId),
+      this.controller.getStagesofBoard(Number(req.params!.boardId)),
     );
   }
 
+  // Method to add a new route into routes
   private addRoute(method: string, pattern: string, handler: Handler) {
     this.routes.push({ method, pattern, handler });
   }
 
-  // so sanh tung dong trong routes
+  // parse params từ URL
   private matchPath(
     pattern: string,
     actual: string,
   ): Record<string, string> | null {
+    // Tách pattern và đường dẫn thực tế ra từng segment (dùng / làm dấu phân cách)
     const pParts = pattern.split('/');
     const aParts = actual.split('/');
 
@@ -69,6 +73,10 @@ export class Router {
 
     const params: Record<string, string> = {};
 
+    //Nếu segment pattern bắt đầu bằng :
+    // lấy tên param và lưu giá trị tương ứng từ đường dẫn thực tế.
+    //matchPath('/boards/:boardId/stages', '/boards/1/stages')
+    // => { boardId: '1' }
     for (let i = 0; i < pParts.length; i++) {
       if (pParts[i].startsWith(':')) {
         const key = pParts[i].slice(1);
@@ -80,6 +88,7 @@ export class Router {
     return params;
   }
 
+  // Method to handle incoming requests
   async handleRequest(req: Request): Promise<any> {
     for (const route of this.routes) {
       if (route.method === req.method) {

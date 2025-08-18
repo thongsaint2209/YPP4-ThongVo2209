@@ -8,10 +8,13 @@ import { BoardRepository } from './board.repository';
 import { Router } from './board.router';
 import { Request } from './board.router';
 import { CacheService } from '../../common/cache/cache.service';
+import { Repository } from 'typeorm';
 
 describe('BoardRepository with Router', () => {
   let controller: BoardController;
   let router: Router;
+  let service: BoardService;
+  let repository: BoardRepository;
   let module: TestingModule;
 
   beforeEach(async () => {
@@ -24,14 +27,19 @@ describe('BoardRepository with Router', () => {
         }),
         TypeOrmModule.forFeature([Board]),
       ],
-      controllers: [BoardController],
+      controllers: [],
       providers: [BoardService, BoardRepository, CacheService],
     }).compile();
 
-    controller = module.get<BoardController>(BoardController);
-    router = new Router(controller);
+    // repository = module.get<BoardRepository>(BoardRepository);
 
-    // TODO: có thể seed data test ở đây
+    // service = new BoardService(repository);
+
+    // controller = new BoardController(service);
+
+    controller = module.get<BoardRepository>(BoardRepository);
+
+    router = new Router(controller); // DI map
   });
 
   const userId = 1;
