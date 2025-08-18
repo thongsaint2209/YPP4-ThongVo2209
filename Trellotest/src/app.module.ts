@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BoardModule } from './modules/board/board.module';
+import { CacheModule } from './common/cache/cache.module';
 
 @Module({
   imports: [

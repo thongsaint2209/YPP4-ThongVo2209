@@ -3,19 +3,15 @@ import { Controller, Get } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { StarredBoardDto } from './dto/starred-board.dto';
 import { RecentlyBoardDto } from './dto/recently-board.dto';
-import { BoardUserIsMemberDto } from './dto/board-user-is-member.dto';
 import { BoardUserIsOwnerOfWorkspaceDto } from './dto/board-user-is-owner-of-workspace.dto';
 import { StageOfBoardDto } from './dto/stage-of-board.dto';
-import { IResourceWithLinks } from './board.repository';
 
 @Controller('board')
 export class BoardController {
   constructor(private readonly boardService: BoardService) {}
 
   @Get('getStarredBoards')
-  getStarredBoards(
-    userId: number,
-  ): Promise<IResourceWithLinks<StarredBoardDto>[]> {
+  getStarredBoards(userId: number): Promise<StarredBoardDto[]> {
     return this.boardService.getStarredBoards(userId);
   }
 
@@ -27,7 +23,7 @@ export class BoardController {
   getBoardsWhereUserIsMemberOfWorkspace(
     userId: number,
     workspaceId: number,
-  ): Promise<BoardUserIsMemberDto[]> {
+  ): Promise<RecentlyBoardDto[]> {
     return this.boardService.getBoardsWhereUserIsMemberOfWorkspace(
       userId,
       workspaceId,

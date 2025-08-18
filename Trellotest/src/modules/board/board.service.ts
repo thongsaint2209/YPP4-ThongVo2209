@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { BoardRepository, IResourceWithLinks } from './board.repository';
+import { BoardRepository } from './board.repository';
 import { StarredBoardDto } from './dto/starred-board.dto';
 import { RecentlyBoardDto } from './dto/recently-board.dto';
-import { BoardUserIsMemberDto } from './dto/board-user-is-member.dto';
 import { BoardUserIsOwnerOfWorkspaceDto } from './dto/board-user-is-owner-of-workspace.dto';
 import { Workspace } from 'src/entities/workspace.entity';
 import { StageOfBoardDto } from './dto/stage-of-board.dto';
@@ -11,9 +10,7 @@ import { StageOfBoardDto } from './dto/stage-of-board.dto';
 export class BoardService {
   constructor(private readonly boardRepository: BoardRepository) {}
 
-  getStarredBoards(
-    userId: number,
-  ): Promise<IResourceWithLinks<StarredBoardDto>[]> {
+  getStarredBoards(userId: number): Promise<StarredBoardDto[]> {
     return this.boardRepository.getStarredBoards(userId);
   }
 
@@ -24,7 +21,7 @@ export class BoardService {
   getBoardsWhereUserIsMemberOfWorkspace(
     userId: number,
     workspaceId: number,
-  ): Promise<BoardUserIsMemberDto[]> {
+  ): Promise<RecentlyBoardDto[]> {
     return this.boardRepository.getBoardsWhereUserIsMemberOfWorkspace(
       userId,
       workspaceId,

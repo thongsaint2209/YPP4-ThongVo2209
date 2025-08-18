@@ -7,6 +7,7 @@ import { BoardService } from './board.service';
 import { BoardRepository } from './board.repository';
 import { Router } from './board.router';
 import { Request } from './board.router';
+import { CacheService } from '../../common/cache/cache.service';
 
 describe('BoardRepository with Router', () => {
   let controller: BoardController;
@@ -24,7 +25,7 @@ describe('BoardRepository with Router', () => {
         TypeOrmModule.forFeature([Board]),
       ],
       controllers: [BoardController],
-      providers: [BoardService, BoardRepository],
+      providers: [BoardService, BoardRepository, CacheService],
     }).compile();
 
     controller = module.get<BoardController>(BoardController);
@@ -33,8 +34,9 @@ describe('BoardRepository with Router', () => {
     // TODO: có thể seed data test ở đây
   });
 
+  const userId = 1;
+  const workspaceId = 1;
   it('should return only active starred boards for user 1', async () => {
-    const userId = 1;
     const request: Request = {
       method: 'GET',
       path: `/boards/starred/${userId}`,
@@ -45,28 +47,82 @@ describe('BoardRepository with Router', () => {
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
     result.forEach((board) => {
-      expect(board.data.BoardStatus).toBe('active');
-      expect(board.data.StarredBoardsStatus).toBe(1);
+      expect(board.BoardStatus).toBe('active');
+      expect(board.StarredBoardsStatus).toBe(1);
     });
   });
 
-  // it('should return only active recently boards for user 1', async () => {
-  //   const request: Request = {
-  //     method: 'GET',
-  //     path: '/boards/recently/:userIds',
-  //     params: { userId: 1 },
-  //     body: {
-  //       name: 'Get Board Name',
-  //       description: 'Get description',
-  //     },
-  //   };
+  it('should return only active recently boards for user 1', async () => {
+    const request: Request = {
+      method: 'GET',
+      path: `/boards/recently/${userId}`,
+    };
 
-  //   const result = await router.Request(request);
+    const result = await router.handleRequest(request);
 
-  //   expect(result).toBeDefined();
-  //   expect(Array.isArray(result)).toBe(true);
-  //   result.forEach((board) => {
-  //     expect(board.BoardStatus).toBe('active');
-  //   });
-  // });
+    expect(result).toBeDefined();
+    expect(Array.isArray(result)).toBe(true);
+    result.forEach((board) => {
+      expect(board.BoardStatus).toBe('active');
+    });
+  });
+
+  it('should return boards where user is member of workspace 1', async () => {
+    const request: Request = {
+      method: 'GET',
+      path: `/boards/workspace/${workspaceId}/member/${userId}`,
+    };
+
+    const result = await router.handleRequest(request);
+
+    expect(result).toBeDefined();
+    expect(Array.isArray(result)).toBe(true);
+    result.forEach((board) => {
+      expect(board.BoardId).toBeDefined();
+      expect(board.BoardName).toBeDefined();
+      expect(board.WorkspaceName).toBeDefined();
+      expect(board.BackgroundUrl).toBeDefined();
+    });
+  });
+
+  it('should return boards where user is owner of workspace 1', async () => {
+    const request: Request = {
+      method: 'GET',
+      path: `/boards/workspace/${workspaceId}/owner/${userId}`,
+      params: { userId: 1, workspaceId: 1 },
+    };
+
+    const result = await router.handleRequest(request);
+
+    expect(result).toBeDefined();
+    expect(Array.isArray(result)).toBe(true);
+    result.forEach((board) => {
+      expect(board.BoardId).toBeDefined();
+      expect(board.BoardName).toBeDefined();
+      expect(board.WorkspaceId).toBeDefined();
+      expect(board.WorkspaceName).toBeDefined();
+      expect(board.CreatedBy).toBe(1); // giả sử userId = 1
+      expect(board.CreatedAt).toBeDefined();
+    });
+  });
+
+  it('should return stages of board 1', async () => {
+    const request: Request = {
+      method: 'GET',
+      path: `/boards/:boardId/stages`,
+      params: { boardId: 1 },
+    };
+
+    const result = await router.handleRequest(request);
+
+    expect(result).toBeDefined();
+    expect(Array.isArray(result)).toBe(true);
+    result.forEach((stage) => {
+      expect(stage.StageId).toBeDefined();
+      expect(stage.StageTitle).toBeDefined();
+      expect(stage.Position).toBeDefined();
+      expect(stage.ColorName).toBeDefined();
+      expect(stage.BoardName).toBeDefined();
+    });
+  });
 });
