@@ -1,3 +1,4 @@
+//giữ các instance trong 1 scope
 export class ScopeContext {
   private instances = new Map<any, any>();
 

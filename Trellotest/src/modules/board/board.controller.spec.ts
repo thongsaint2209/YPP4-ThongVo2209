@@ -27,7 +27,7 @@ describe('BoardRepository with Router', () => {
         }),
         TypeOrmModule.forFeature([Board]),
       ],
-      controllers: [],
+      controllers: [BoardController],
       providers: [BoardService, BoardRepository, CacheService],
     }).compile();
 
@@ -37,13 +37,15 @@ describe('BoardRepository with Router', () => {
 
     // controller = new BoardController(service);
 
-    controller = module.get<BoardRepository>(BoardRepository);
+    controller = module.get<BoardController>(BoardController);
 
     router = new Router(controller); // DI map
   });
 
   const userId = 1;
   const workspaceId = 1;
+  const starredBoardsStatus = 1;
+  const boardStatus = 'active';
   it('should return only active starred boards for user 1', async () => {
     const request: Request = {
       method: 'GET',
@@ -55,8 +57,8 @@ describe('BoardRepository with Router', () => {
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
     result.forEach((board) => {
-      expect(board.BoardStatus).toBe('active');
-      expect(board.StarredBoardsStatus).toBe(1);
+      expect(board.BoardStatus).toBe(boardStatus);
+      expect(board.StarredBoardsStatus).toBe(starredBoardsStatus);
     });
   });
 

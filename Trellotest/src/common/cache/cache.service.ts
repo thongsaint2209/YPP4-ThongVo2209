@@ -16,7 +16,7 @@ export class CacheService {
     if (!item) return null;
     if (Date.now() > item.expire) {
       // đã hết hạn
-      this.cache.delete(key); // xóa khỏi cache
+      this.cache.delete(key);
       return null;
     }
     return item.data; // còn hạn, trả về data

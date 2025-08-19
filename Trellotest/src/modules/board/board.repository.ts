@@ -27,13 +27,14 @@ export class BoardRepository {
       brd.BoardName,
       brd.BoardStatus,
       usb.StarredBoardsStatus
-    FROM UserStarredBoard usb
+    FROM UserStarredBoard usb 
     JOIN Board brd ON brd.Id = usb.BoardId
     WHERE usb.UserId = ?
       AND brd.BoardStatus = 'active'
     ORDER BY usb.CreatedAt DESC
   `;
 
+    await this.boardRepository.query(`PRAGMA read_uncommitted = 1`);
     // Truyền callback để query nếu cache hết hạn
     return this.cacheService.queryWithCache(
       cacheKey,
@@ -60,6 +61,7 @@ export class BoardRepository {
     ORDER BY uvh.AccessedAt DESC
     LIMIT 4
   `;
+
     return this.boardRepository.query(sql, [userId]);
   }
 

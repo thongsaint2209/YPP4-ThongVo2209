@@ -1,5 +1,5 @@
 // Boardboard.controller.ts
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Param } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { StarredBoardDto } from './dto/starred-board.dto';
 import { RecentlyBoardDto } from './dto/recently-board.dto';
@@ -41,7 +41,9 @@ export class BoardController {
     );
   }
   @Get('getStagesofBoard')
-  getStagesofBoard(boardId: number): Promise<StageOfBoardDto[]> {
+  getStagesofBoard(
+    @Param('userId') boardId: number,
+  ): Promise<StageOfBoardDto[]> {
     return this.boardService.getStagesofBoard(boardId);
   }
 }
