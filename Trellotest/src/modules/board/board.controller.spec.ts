@@ -9,6 +9,7 @@ import { Router } from './board.router';
 import { Request } from './board.router';
 import { CacheService } from '../../common/cache/cache.service';
 import { Repository } from 'typeorm';
+import { Container } from '../../DI/container';
 
 describe('BoardRepository with Router', () => {
   let controller: BoardController;
@@ -16,8 +17,10 @@ describe('BoardRepository with Router', () => {
   let service: BoardService;
   let repository: BoardRepository;
   let module: TestingModule;
+  let container: Container;
 
   beforeEach(async () => {
+    // container = new Container();
     module = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot({
@@ -37,8 +40,8 @@ describe('BoardRepository with Router', () => {
 
     // controller = new BoardController(service);
 
+    // controller = container.resolve(BoardController);
     controller = module.get<BoardController>(BoardController);
-
     router = new Router(controller); // DI map
   });
 

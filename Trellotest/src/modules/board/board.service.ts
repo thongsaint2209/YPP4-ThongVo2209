@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { BoardRepository } from './board.repository';
 import { StarredBoardDto } from './dto/starred-board.dto';
 import { RecentlyBoardDto } from './dto/recently-board.dto';
-import { BoardUserIsOwnerOfWorkspaceDto } from './dto/board-user-is-owner-of-workspace.dto';
+import { BoardUserDto } from './dto/board-user.dto';
 import { Workspace } from 'src/entities/workspace.entity';
 import { StageOfBoardDto } from './dto/stage-of-board.dto';
 
@@ -28,14 +28,8 @@ export class BoardService {
     );
   }
 
-  getBoardsWhereUserIsOwnerOfWorkspace(
-    userId: number,
-    workspaceId: number,
-  ): Promise<BoardUserIsOwnerOfWorkspaceDto[]> {
-    return this.boardRepository.getBoardsWhereUserIsOwnerOfWorkspace(
-      userId,
-      workspaceId,
-    );
+  getOwnerBoards(userId: number, workspaceId: number): Promise<BoardUserDto[]> {
+    return this.boardRepository.getOwnerBoards(userId, workspaceId);
   }
 
   getStagesofBoard(boardId: number): Promise<StageOfBoardDto[]> {

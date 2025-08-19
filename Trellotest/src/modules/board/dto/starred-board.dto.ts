@@ -5,4 +5,5 @@ export class StarredBoardDto {
   BackgroundUrl: string;
   BoardStatus: string;
   StarredBoardsStatus: boolean;
+  WorkspaceId: boolean;
 }
