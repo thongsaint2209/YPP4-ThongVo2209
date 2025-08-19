@@ -65,40 +65,39 @@ export class Router {
     pattern: string,
     actual: string,
   ): Record<string, string> | null {
-    // Tách pattern và đường dẫn thực tế ra từng segment (dùng / làm dấu phân cách)
     const pParts = pattern.split('/');
     const aParts = actual.split('/');
 
     if (pParts.length !== aParts.length) return null;
 
-    const params: Record<string, string> = {};
-
-    //Nếu segment pattern bắt đầu bằng :
     // lấy tên param và lưu giá trị tương ứng từ đường dẫn thực tế.
     //matchPath('/boards/:boardId/stages', '/boards/1/stages')
     // => { boardId: '1' }
-    for (let i = 0; i < pParts.length; i++) {
-      if (pParts[i].startsWith(':')) {
-        const key = pParts[i].slice(1);
-        params[key] = aParts[i];
-      } else if (pParts[i] !== aParts[i]) {
-        return null;
-      }
-    }
-    return params;
+    const params: Record<string, string> = {};
+
+    // Kiểm tra từng segment
+    const matched = pParts.every(
+      (part, i) =>
+        part.startsWith(':')
+          ? ((params[part.slice(1)] = aParts[i]), true) // Nếu là param, lưu vào params
+          : part === aParts[i], // Nếu là literal, phải khớp
+    );
+
+    return matched ? params : null;
   }
 
   // Method to handle incoming requests
   async handleRequest(req: Request): Promise<any> {
-    for (const route of this.routes) {
-      if (route.method === req.method) {
-        const params = this.matchPath(route.pattern, req.path);
-        if (params) {
-          req.params = params;
-          return route.handler(req);
-        }
-      }
+    const route = this.routes.find(
+      (r) => r.method === req.method && this.matchPath(r.pattern, req.path),
+    );
+
+    if (!route) {
+      throw new Error(`Route not found: [${req.method}] ${req.path}`);
     }
-    throw new Error(`Route not found: [${req.method}] ${req.path}`);
+
+    // Chuyển null thành undefined
+    req.params = this.matchPath(route.pattern, req.path) ?? undefined;
+    return route.handler(req);
   }
 }

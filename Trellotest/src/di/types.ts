@@ -1,6 +1,6 @@
 export type Constructor<T = any> = new (...args: any[]) => T;
 
-export type ProviderToken<T = any> = string | symbol | Constructor<T>;
+export type ProviderToken<T = any> = string | symbol | Constructor<T>; // key để định danh provider
 
 export enum Lifetime {
   Singleton = 'SINGLETON',
@@ -8,6 +8,7 @@ export enum Lifetime {
   Scoped = 'SCOPED',
 }
 
+// config khi register provider
 export interface ProviderOptions<T = any> {
   provide: ProviderToken<T>;
   useClass?: Constructor<T>;

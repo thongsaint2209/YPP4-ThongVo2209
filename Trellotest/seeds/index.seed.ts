@@ -28,6 +28,8 @@ export async function seedDatabase(): Promise<void> {
     await dataSource.initialize();
     console.log('>>> Database connected');
 
+    await dataSource.query('PRAGMA read_uncommitted = true');
+
     await runAllSeeds(dataSource);
 
     await dataSource.destroy();

@@ -1,5 +1,6 @@
 import { Lifetime, ProviderOptions, ProviderToken } from './types';
 
+// mô tả cách resolve dependency
 export class Provider<T = any> {
   token: ProviderToken<T>;
   useClass?: any;
