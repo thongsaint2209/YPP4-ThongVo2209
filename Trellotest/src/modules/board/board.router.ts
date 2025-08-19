@@ -44,7 +44,7 @@ export class Router {
       'GET',
       '/boards/workspace/:workspaceId/owner/:userId',
       async (req) =>
-        this.controller.getBoardsWhereUserIsOwnerOfWorkspace(
+        this.controller.getOwnerBoards(
           Number(req.params!.userId),
           Number(req.params!.workspaceId),
         ),

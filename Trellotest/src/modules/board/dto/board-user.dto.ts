@@ -1,4 +1,4 @@
-export class BoardUserIsOwnerOfWorkspaceDto {
+export class BoardUserDto {
   BoardId: number;
   BoardName: string;
   BackgroundUrl: string;

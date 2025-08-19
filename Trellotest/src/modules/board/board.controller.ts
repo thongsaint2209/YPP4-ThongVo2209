@@ -3,7 +3,7 @@ import { Controller, Get, Param } from '@nestjs/common';
 import { BoardService } from './board.service';
 import { StarredBoardDto } from './dto/starred-board.dto';
 import { RecentlyBoardDto } from './dto/recently-board.dto';
-import { BoardUserIsOwnerOfWorkspaceDto } from './dto/board-user-is-owner-of-workspace.dto';
+import { BoardUserDto } from './dto/board-user.dto';
 import { StageOfBoardDto } from './dto/stage-of-board.dto';
 
 @Controller('board')
@@ -30,15 +30,9 @@ export class BoardController {
     );
   }
 
-  @Get('getBoardsWhereUserIsOwnerOfWorkspace')
-  getBoardsWhereUserIsOwnerOfWorkspace(
-    userId: number,
-    workspaceId: number,
-  ): Promise<BoardUserIsOwnerOfWorkspaceDto[]> {
-    return this.boardService.getBoardsWhereUserIsOwnerOfWorkspace(
-      userId,
-      workspaceId,
-    );
+  @Get('getOwnerBoards')
+  getOwnerBoards(userId: number, workspaceId: number): Promise<BoardUserDto[]> {
+    return this.boardService.getOwnerBoards(userId, workspaceId);
   }
   @Get('getStagesofBoard')
   getStagesofBoard(
