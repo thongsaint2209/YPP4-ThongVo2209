@@ -70,7 +70,6 @@ describe('BoardRepository with Router', () => {
     const request: Request = {
       method: 'GET',
       path: `/boards/recently?userId=${userId}`,
-      params: { userId: '1' },
     };
 
     const result = await router.handleRequest(request);
@@ -106,7 +105,6 @@ describe('BoardRepository with Router', () => {
     const request: Request = {
       method: 'GET',
       path: `/boards/workspace?userId=${userId}&workspaceId=${workspaceId}&membership=${membership}`,
-      params: { userId: 1, workspaceId: 1 },
     };
 
     const result = await router.handleRequest(request);
@@ -127,7 +125,6 @@ describe('BoardRepository with Router', () => {
     const request: Request = {
       method: 'GET',
       path: `/boards/stages?boardId=${boardId}`,
-      params: { boardId: 1 },
     };
 
     const result = await router.handleRequest(request);
