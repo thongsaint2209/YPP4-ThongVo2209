@@ -47,12 +47,13 @@ describe('BoardRepository with Router', () => {
 
   const userId = 1;
   const workspaceId = 1;
+  const boardId = 1;
   const starredBoardsStatus = 1;
   const boardStatus = 'active';
   it('should return only active starred boards for user 1', async () => {
     const request: Request = {
       method: 'GET',
-      path: `/boards/starred/${userId}`,
+      path: `/boards/starred?userId=${userId}`,
     };
 
     const result = await router.handleRequest(request);
@@ -68,7 +69,8 @@ describe('BoardRepository with Router', () => {
   it('should return only active recently boards for user 1', async () => {
     const request: Request = {
       method: 'GET',
-      path: `/boards/recently/${userId}`,
+      path: `/boards/recently?userId=${userId}`,
+      params: { userId: '1' },
     };
 
     const result = await router.handleRequest(request);
@@ -81,9 +83,10 @@ describe('BoardRepository with Router', () => {
   });
 
   it('should return boards where user is member of workspace 1', async () => {
+    const membership = 'member';
     const request: Request = {
       method: 'GET',
-      path: `/boards/workspace/${workspaceId}/member/${userId}`,
+      path: `/boards/workspace?userId=${userId}&workspaceId=${workspaceId}&membership=${membership}`,
     };
 
     const result = await router.handleRequest(request);
@@ -99,9 +102,10 @@ describe('BoardRepository with Router', () => {
   });
 
   it('should return boards where user is owner of workspace 1', async () => {
+    const membership = 'owner';
     const request: Request = {
       method: 'GET',
-      path: `/boards/workspace/${workspaceId}/owner/${userId}`,
+      path: `/boards/workspace?userId=${userId}&workspaceId=${workspaceId}&membership=${membership}`,
       params: { userId: 1, workspaceId: 1 },
     };
 
@@ -122,7 +126,7 @@ describe('BoardRepository with Router', () => {
   it('should return stages of board 1', async () => {
     const request: Request = {
       method: 'GET',
-      path: `/boards/:boardId/stages`,
+      path: `/boards/stages?boardId=${boardId}`,
       params: { boardId: 1 },
     };
 

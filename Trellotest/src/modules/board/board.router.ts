@@ -1,103 +1,92 @@
-// board.router.ts
 import { BoardController } from './board.controller';
 
 export interface Request {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-  path: string;
-  params?: Record<string, any>; // URL parameters, e.g., { UserId: '1' }
-  body?: any; // POST, PUT
+  path: string; // có thể kèm query string
+  params?: Record<string, any>; // path params + query params
+  body?: any;
 }
 
-// Handler type for request processing
 type Handler = (req: Request) => Promise<any>;
 
 interface RouteDef {
   method: string;
-  pattern: string; // pattern of the route, e.g., '/boards/:boardId/stages'
-  handler: Handler; // function to handle the request
+  pattern: string; // base path, không kèm query string
+  handler: Handler;
 }
 
 export class Router {
   private routes: RouteDef[] = [];
 
   constructor(private readonly controller: BoardController) {
-    //register route GET
-    this.addRoute('GET', '/boards/starred/:userId', async (req) =>
-      this.controller.getStarredBoards(Number(req.params!.userId)),
-    );
+    // Starred boards
+    this.addRoute('GET', '/boards/starred', async (req) => {
+      const userId = Number(req.params!.userId);
+      return this.controller.getStarredBoards(userId);
+    });
 
-    this.addRoute('GET', '/boards/recently/:userId', async (req) =>
-      this.controller.getRecentlyBoardsByUser(Number(req.params!.userId)),
-    );
+    // Recently boards
+    this.addRoute('GET', '/boards/recently', async (req) => {
+      const userId = Number(req.params!.userId);
+      return this.controller.getRecentlyBoardsByUser(userId);
+    });
 
-    this.addRoute(
-      'GET',
-      '/boards/workspace/:workspaceId/member/:userId',
-      async (req) =>
-        this.controller.getBoardsWhereUserIsMemberOfWorkspace(
-          Number(req.params!.userId),
-          Number(req.params!.workspaceId),
+    // Workspace boards (member or owner)
+    this.addRoute('GET', '/boards/workspace', async (req) => {
+      const userId = Number(req.params!.userId);
+      const workspaceId = Number(req.params!.workspaceId);
+      const membership = req.params!.membership;
+
+      const membershipMap: Record<
+        string,
+        (u: number, w: number) => Promise<any>
+      > = {
+        owner: this.controller.getOwnerBoards.bind(this.controller),
+        member: this.controller.getBoardsWhereUserIsMemberOfWorkspace.bind(
+          this.controller,
         ),
-    );
+      };
 
-    this.addRoute(
-      'GET',
-      '/boards/workspace/:workspaceId/owner/:userId',
-      async (req) =>
-        this.controller.getOwnerBoards(
-          Number(req.params!.userId),
-          Number(req.params!.workspaceId),
-        ),
-    );
+      const handlerFn = membershipMap[membership];
+      if (!handlerFn) throw new Error(`Invalid membership type: ${membership}`);
 
-    this.addRoute('GET', '/boards/:boardId/stages', async (req) =>
-      this.controller.getStagesofBoard(Number(req.params!.boardId)),
-    );
+      return handlerFn(userId, workspaceId);
+    });
+
+    // Board stages
+    this.addRoute('GET', '/boards/stages', async (req) => {
+      const boardId = Number(req.params!.boardId);
+      return this.controller.getStagesofBoard(boardId);
+    });
   }
 
-  // Method to add a new route into routes
   private addRoute(method: string, pattern: string, handler: Handler) {
     this.routes.push({ method, pattern, handler });
   }
 
-  // parse params từ URL
-  private matchPath(
-    pattern: string,
-    actual: string,
-  ): Record<string, string> | null {
-    const pParts = pattern.split('/');
-    const aParts = actual.split('/');
-
-    if (pParts.length !== aParts.length) return null;
-
-    // lấy tên param và lưu giá trị tương ứng từ đường dẫn thực tế.
-    //matchPath('/boards/:boardId/stages', '/boards/1/stages')
-    // => { boardId: '1' }
-    const params: Record<string, string> = {};
-
-    // Kiểm tra từng segment
-    const matched = pParts.every(
-      (part, i) =>
-        part.startsWith(':')
-          ? ((params[part.slice(1)] = aParts[i]), true) // Nếu là param, lưu vào params
-          : part === aParts[i], // Nếu là literal, phải khớp
-    );
-
-    return matched ? params : null;
-  }
-
-  // Method to handle incoming requests
   async handleRequest(req: Request): Promise<any> {
+    // Tách path base và query string thủ công
+    const [pathOnly, queryString] = req.path.split('?');
+
+    // parse query string
+    const queryParams: Record<string, string> = {};
+
+    queryString?.split('&').forEach((pair) => {
+      const [key, value] = pair.split('=');
+      if (key) queryParams[key] = value;
+    });
+
+    req.params = queryParams;
+
+    // tìm route theo method + path base
     const route = this.routes.find(
-      (r) => r.method === req.method && this.matchPath(r.pattern, req.path),
+      (r) => r.method === req.method && r.pattern === pathOnly,
     );
 
     if (!route) {
       throw new Error(`Route not found: [${req.method}] ${req.path}`);
     }
 
-    // Chuyển null thành undefined
-    req.params = this.matchPath(route.pattern, req.path) ?? undefined;
     return route.handler(req);
   }
 }
