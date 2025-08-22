@@ -5,19 +5,17 @@ import { Board } from '../../entities/board.entity';
 import { BoardController } from './board.controller';
 import { BoardService } from './board.service';
 import { BoardRepository } from './board.repository';
-import { Router } from './board.router';
-import { Request } from './board.router';
+import { RouterManager } from '../../app.router-manager';
 import { CacheService } from '../../common/cache/cache.service';
-import { Repository } from 'typeorm';
-import { Container } from '../../DI/container';
+import { AppRouter, Request } from '../../app.routers';
 
 describe('BoardRepository with Router', () => {
   let controller: BoardController;
-  let router: Router;
   let service: BoardService;
   let repository: BoardRepository;
   let module: TestingModule;
-  let container: Container;
+  let appRouter: AppRouter; // giữ reference để test
+  let boardManager: RouterManager;
 
   beforeEach(async () => {
     // container = new Container();
@@ -34,15 +32,11 @@ describe('BoardRepository with Router', () => {
       providers: [BoardService, BoardRepository, CacheService],
     }).compile();
 
-    // repository = module.get<BoardRepository>(BoardRepository);
-
-    // service = new BoardService(repository);
-
-    // controller = new BoardController(service);
-
-    // controller = container.resolve(BoardController);
     controller = module.get<BoardController>(BoardController);
-    router = new Router(controller); // DI map
+
+    // Khởi tạo RouterManager (singleton)
+    RouterManager.init(controller);
+    appRouter = RouterManager.getRouter();
   });
 
   const userId = 1;
@@ -56,7 +50,7 @@ describe('BoardRepository with Router', () => {
       path: `/boards/starred?userId=${userId}`,
     };
 
-    const result = await router.handleRequest(request);
+    const result = await appRouter.handleRequest(request);
 
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
@@ -72,7 +66,7 @@ describe('BoardRepository with Router', () => {
       path: `/boards/recently?userId=${userId}`,
     };
 
-    const result = await router.handleRequest(request);
+    const result = await appRouter.handleRequest(request);
 
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
@@ -88,7 +82,7 @@ describe('BoardRepository with Router', () => {
       path: `/boards/workspace?userId=${userId}&workspaceId=${workspaceId}&membership=${membership}`,
     };
 
-    const result = await router.handleRequest(request);
+    const result = await appRouter.handleRequest(request);
 
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
@@ -107,7 +101,7 @@ describe('BoardRepository with Router', () => {
       path: `/boards/workspace?userId=${userId}&workspaceId=${workspaceId}&membership=${membership}`,
     };
 
-    const result = await router.handleRequest(request);
+    const result = await appRouter.handleRequest(request);
 
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
@@ -127,7 +121,7 @@ describe('BoardRepository with Router', () => {
       path: `/boards/stages?boardId=${boardId}`,
     };
 
-    const result = await router.handleRequest(request);
+    const result = await appRouter.handleRequest(request);
 
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
