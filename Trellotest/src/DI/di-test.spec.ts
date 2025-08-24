@@ -49,7 +49,7 @@ describe('Router → Controller → Service → Repository', () => {
     (Container as any).instances.clear?.();
     (Container as any).providers.clear?.();
 
-    // Register providers manually (decorator Injectable() cũng làm điều này)
+    // Register providers manually
     Container.register(UserRepository);
     Container.register(UserService);
     Container.register(UserController);
