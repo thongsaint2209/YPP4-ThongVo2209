@@ -33,10 +33,6 @@ describe('BoardRepository with Router', () => {
     }).compile();
 
     controller = module.get<BoardController>(BoardController);
-
-    // Khởi tạo RouterManager (singleton)
-    RouterManager.init(controller);
-    appRouter = RouterManager.getRouter();
   });
 
   const userId = 1;
@@ -45,12 +41,7 @@ describe('BoardRepository with Router', () => {
   const starredBoardsStatus = 1;
   const boardStatus = 'active';
   it('should return only active starred boards for user 1', async () => {
-    const request: Request = {
-      method: 'GET',
-      path: `/boards/starred?userId=${userId}`,
-    };
-
-    const result = await appRouter.handleRequest(request);
+    const result = await controller.getStarredBoards(userId);
 
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);

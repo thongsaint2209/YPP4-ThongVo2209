@@ -1,22 +1,21 @@
 import { AppRouter, Request } from './app.routers';
+import { Container } from './DI/container';
 import { BoardController } from './modules/board/board.controller';
 import { CardController } from './modules/card/card.controller';
 
 export class RouterManager {
   private static instance: RouterManager;
   private appRouter: AppRouter;
-  private boardController: BoardController;
 
-  private constructor(boardController: BoardController) {
-    this.appRouter = new AppRouter(); // chỉ new một lần
-    this.boardController = boardController;
+  private constructor() {
+    this.appRouter = new AppRouter();
 
     this.registerBoardRoutes();
   }
 
-  static init(boardController: BoardController): RouterManager {
+  static init(): RouterManager {
     if (!RouterManager.instance) {
-      RouterManager.instance = new RouterManager(boardController);
+      RouterManager.instance = new RouterManager();
     }
     return RouterManager.instance;
   }
@@ -31,12 +30,14 @@ export class RouterManager {
   private registerBoardRoutes() {
     this.appRouter.addRoute('GET', '/boards/starred', async (req: Request) => {
       const userId = Number(req.params!.userId);
-      return this.boardController.getStarredBoards(userId);
+      const boardController = Container.resolve(BoardController);
+      return boardController.getStarredBoards(userId);
     });
 
     this.appRouter.addRoute('GET', '/boards/recently', async (req: Request) => {
       const userId = Number(req.params!.userId);
-      return this.boardController.getRecentlyBoardsByUser(userId);
+      const boardController = Container.resolve(BoardController);
+      return boardController.getRecentlyBoardsByUser(userId);
     });
 
     this.appRouter.addRoute(
@@ -46,15 +47,16 @@ export class RouterManager {
         const userId = Number(req.params!.userId);
         const workspaceId = Number(req.params!.workspaceId);
         const membership = req.params!.membership;
+        const boardController = Container.resolve(BoardController);
 
         const membershipMap: Record<
           string,
           (u: number, w: number) => Promise<any>
         > = {
-          owner: this.boardController.getOwnerBoards.bind(this.boardController),
+          owner: boardController.getOwnerBoards.bind(boardController),
           member:
-            this.boardController.getBoardsWhereUserIsMemberOfWorkspace.bind(
-              this.boardController,
+            boardController.getBoardsWhereUserIsMemberOfWorkspace.bind(
+              boardController,
             ),
         };
 
@@ -67,7 +69,8 @@ export class RouterManager {
 
     this.appRouter.addRoute('GET', '/boards/stages', async (req: Request) => {
       const boardId = Number(req.params!.boardId);
-      return this.boardController.getStagesofBoard(boardId);
+      const boardController = Container.resolve(BoardController);
+      return boardController.getStagesofBoard(boardId);
     });
   }
 }

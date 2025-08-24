@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 // === Type Provider ===
-// đại diện class có thể new ra instance kiểu T
+// class constructor có thể new.
 export type ClassType<T = unknown> = new (...args: any[]) => T;
 
 // === Container ===
@@ -15,7 +15,7 @@ export class Container {
   }
 
   static resolve<T>(target: ClassType<T>): T {
-    // Nếu instance đã có trong dictionary thì trả luôn (Singleton)
+    // Check instance in dictionary return (Singleton)
     if (this.instances.has(target)) {
       return this.instances.get(target);
     }
@@ -25,12 +25,12 @@ export class Container {
       throw new Error(`Class ${target.name} is not registered as provider`);
     }
 
-    // chua co instance
-    // Lấy metadata: danh sách param types trong constructor
+    // No instance
+    // Get Metadata: Param Types list in constructor
     const paramTypes: any[] =
       Reflect.getMetadata('design:paramtypes', target) || [];
 
-    // Đệ quy resolve từng dependency de
+    // De quy resolve dependency
     const deps = paramTypes.map((dep) => this.resolve(dep));
 
     // Create new instance
@@ -43,7 +43,7 @@ export class Container {
   }
 }
 
-// === Injectable decorator ===
+// Injectable decorator
 export function Injectable() {
   return function (target: ClassType) {
     Container.register(target);
