@@ -6,10 +6,15 @@ import { CardDto } from './dto/card.dto';
 export class CardService {
   constructor(private readonly CardRepository: CardRepository) {}
 
-  getCardsOfStageInBoard(
-    StagePoision: number,
+  getCardsStage(StagePoision: number, BoardId: number): Promise<CardDto[]> {
+    return this.CardRepository.getCardsStage(StagePoision, BoardId);
+  }
+
+  getCardsInfor(
+    CardId: number,
+    StageId: number,
     BoardId: number,
   ): Promise<CardDto[]> {
-    return this.CardRepository.getCardsOfStageInBoard(StagePoision, BoardId);
+    return this.CardRepository.getCardsInfor(CardId, StageId, BoardId);
   }
 }

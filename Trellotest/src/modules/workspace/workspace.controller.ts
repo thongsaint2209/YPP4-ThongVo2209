@@ -1,18 +1,16 @@
 // workspaceboard.controller.ts
 import { Controller, Get } from '@nestjs/common';
 import { WorkspaceService } from './workspace.service';
-import { WorkspaceUserIsMemberDto } from './dto/workspace-user-is-member.dto';
+import { WorkspaceMemberDto } from './dto/workspace-user-is-member.dto';
 import { WorkspaceTypeDto } from './dto/workspace-type.dto';
 
 @Controller('Workspace')
 export class WorkspaceController {
   constructor(private readonly workspaceService: WorkspaceService) {}
 
-  @Get('getWorkspacesWhereUserIsMember')
-  getWorkspacesWhereUserIsMember(
-    userId: number,
-  ): Promise<WorkspaceUserIsMemberDto[]> {
-    return this.workspaceService.getWorkspacesWhereUserIsMember(userId);
+  @Get('getWorkspacesMember')
+  getWorkspacesMember(userId: number): Promise<WorkspaceMemberDto[]> {
+    return this.workspaceService.getWorkspacesMember(userId);
   }
 
   @Get('getWorkspacesType')
@@ -20,10 +18,7 @@ export class WorkspaceController {
     return this.workspaceService.getWorkspacesType();
   }
   @Get('getWorkspaceIsMember')
-  getWorkspaceIsMember(
-    userId,
-    workspaceId,
-  ): Promise<WorkspaceUserIsMemberDto[]> {
+  getWorkspaceIsMember(userId, workspaceId): Promise<WorkspaceMemberDto[]> {
     return this.workspaceService.getWorkspaceIsMember(userId, workspaceId);
   }
 }

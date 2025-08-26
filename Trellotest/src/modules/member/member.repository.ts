@@ -11,17 +11,20 @@ export class MemberRepository {
     private readonly memberRepository: Repository<Member>,
   ) {}
 
-  getAvatarMembersOfBoard(BoardId: number): Promise<AvatarMemberDto[]> {
+  getAvatarBoardMembers(BoardId: number): Promise<AvatarMemberDto[]> {
     const sql = `
-    SELECT 
-      usr.Id UserId, 
-      usr.PictureUrl UserPicture, 
-      owt.OwnerTypeValue, 
-      mmb.OwnerId BoardId
-    FROM Members mmb
-    JOIN OwnerType owt ON owt.Id = mmb.OwnerTypeId
-    JOIN [Users] usr ON usr.Id = mmb.UserId
-    WHERE owt.OwnerTypeValue = 'BOARD' AND mmb.OwnerId = ?
+        SELECT 
+          usr.Id UserId, 
+          usr.PictureUrl UserPicture, 
+          owt.OwnerTypeValue, 
+          mmb.OwnerId BoardId 
+        FROM 
+          Members mmb 
+          JOIN OwnerType owt ON owt.Id = mmb.OwnerTypeId 
+          JOIN Users usr ON usr.Id = mmb.UserId 
+        WHERE 
+          owt.OwnerTypeValue = 'BOARD' 
+          AND mmb.OwnerId = ?
 `;
 
     return this.memberRepository.query(sql, [BoardId]);

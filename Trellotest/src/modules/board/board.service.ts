@@ -18,18 +18,15 @@ export class BoardService {
     return this.boardRepository.getRecentlyBoardsByUser(userId);
   }
 
-  getBoardsWhereUserIsMemberOfWorkspace(
+  getBoardsMember(
     userId: number,
     workspaceId: number,
   ): Promise<RecentlyBoardDto[]> {
-    return this.boardRepository.getBoardsWhereUserIsMemberOfWorkspace(
-      userId,
-      workspaceId,
-    );
+    return this.boardRepository.getBoardsMember(userId, workspaceId);
   }
 
-  getOwnerBoards(userId: number, workspaceId: number): Promise<BoardUserDto[]> {
-    return this.boardRepository.getOwnerBoards(userId, workspaceId);
+  getBoardsOwner(userId: number, workspaceId: number): Promise<BoardUserDto[]> {
+    return this.boardRepository.getBoardsOwner(userId, workspaceId);
   }
 
   getStagesofBoard(boardId: number): Promise<StageOfBoardDto[]> {

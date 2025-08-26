@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { WorkspaceUserIsMemberDto } from './dto/workspace-user-is-member.dto';
+import { WorkspaceMemberDto } from './dto/workspace-user-is-member.dto';
 import { Workspace } from '../../entities/workspace.entity';
 import { WorkspaceTypeDto } from './dto/workspace-type.dto';
 
@@ -12,20 +12,22 @@ export class WorkspaceRepository {
     private readonly WorkspaceRepository: Repository<Workspace>,
   ) {}
 
-  getWorkspacesWhereUserIsMember(
-    userId: number,
-  ): Promise<WorkspaceUserIsMemberDto[]> {
+  getWorkspacesMember(userId: number): Promise<WorkspaceMemberDto[]> {
     const sql = `
-      SELECT 
-        wsp.Id WorkspaceId, 
-        wsp.WorkspaceName, 
-        wsp.LogoUrl
-      FROM Workspace wsp
-      JOIN Members meb ON meb.OwnerId = wsp.Id
-      JOIN OwnerType owt ON owt.Id = meb.OwnerTypeId
-      JOIN [User] usr ON usr.Id = meb.UserId
-      WHERE owt.OwnerTypeValue = 'WORKSPACE' AND meb.UserId = ?
-      ORDER BY wsp.CreatedAt
+          SELECT 
+            wsp.Id WorkspaceId, 
+            wsp.WorkspaceName, 
+            wsp.LogoUrl 
+          FROM 
+            Workspace wsp 
+            JOIN Members meb ON meb.OwnerId = wsp.Id 
+            JOIN OwnerType owt ON owt.Id = meb.OwnerTypeId 
+            JOIN Users usr ON usr.Id = meb.UserId 
+          WHERE 
+            owt.OwnerTypeValue = 'WORKSPACE' 
+            AND usr.Id = ?
+          ORDER BY 
+            wsp.CreatedAt;
       `;
 
     return this.WorkspaceRepository.query(sql, [userId]);
@@ -33,8 +35,12 @@ export class WorkspaceRepository {
 
   getWorkspacesType(): Promise<WorkspaceTypeDto[]> {
     const sql = `
-      SELECT Id, TypeValue, DisplayValue
-      FROM WorkspaceType
+      SELECT 
+        Id, 
+        TypeValue, 
+        DisplayValue
+      FROM 
+        WorkspaceType
       `;
 
     return this.WorkspaceRepository.query(sql);
@@ -43,7 +49,7 @@ export class WorkspaceRepository {
   getWorkspaceIsMember(
     userId: number,
     workspaceId: number,
-  ): Promise<WorkspaceUserIsMemberDto[]> {
+  ): Promise<WorkspaceMemberDto[]> {
     const sql = `
       SELECT 
         wsp.Id WorkspaceId,

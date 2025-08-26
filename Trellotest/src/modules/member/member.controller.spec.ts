@@ -31,7 +31,7 @@ describe('MemberRepository (SQLite in-memory)', () => {
   const StagePoision = 1;
   //Get avatar's member in a specific board
   it('should return get avatar member in a specific board', async () => {
-    const result = await controller.getAvatarMembersOfBoard(BoardId);
+    const result = await controller.getAvatarBoardMembers(BoardId);
     console.log(result);
     expect(result).toBeDefined();
     expect(result).not.toBeNull();
