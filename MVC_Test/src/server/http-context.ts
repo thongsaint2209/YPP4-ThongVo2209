@@ -1,26 +1,23 @@
-import type { IncomingMessage, ServerResponse } from "http";
+import { IncomingMessage, ServerResponse } from "http";
 
 export class HttpContext {
-  request: IncomingMessage;
-  response: ServerResponse;
-  state: Record<string, any> = {};
-  container: Map<string, any>;
+  req: IncomingMessage;
+  res: ServerResponse;
+  query: Record<string, string> = {};
+  params: Record<string, string> = {};
+  body: any = {};
 
-  constructor(
-    req: IncomingMessage,
-    res: ServerResponse,
-    container: Map<string, any>
-  ) {
-    this.request = req;
-    this.response = res;
-    this.container = container;
-  }
+  constructor(req: IncomingMessage, res: ServerResponse) {
+    this.req = req;
+    this.res = res;
 
-  getService<T>(key: string): T {
-    return this.container.get(key);
-  }
-
-  setService<T>(key: string, instance: T) {
-    this.container.set(key, instance);
+    // parse query string
+    const urlParts = req.url?.split("?") || [];
+    if (urlParts[1]) {
+      urlParts[1].split("&").forEach((pair) => {
+        const [key = "", value = ""] = pair.split("=");
+        if (key) this.query[key] = decodeURIComponent(value);
+      });
+    }
   }
 }

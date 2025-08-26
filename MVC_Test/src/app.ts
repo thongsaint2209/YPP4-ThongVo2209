@@ -1,27 +1,19 @@
 import { HttpServer } from "./server/http-server";
 import { Router } from "./server/router";
-import { logger, jsonBodyParser } from "./server/middleware";
-import { ProductRepository } from "./repositories/product-repository";
-import { ProductService } from "./service/product-service";
-import { ProductController } from "./controller/product-controller";
+import { UserController } from "./controller/user-controller";
+import { UserService } from "./service/user-service";
+import { UserRepository } from "./repositories/user-repository";
 
+// setup DI
+const userRepo = new UserRepository();
+const userService = new UserService(userRepo);
+const userController = new UserController(userService);
+
+// setup router
 const router = new Router();
-const repo = new ProductRepository();
-const service = new ProductService(repo);
-const controller = new ProductController(service);
-const PORT = 3000;
+router.register("GET", "/user/name", (ctx) => userController.getUser(ctx));
 
-// Dynamic routes
-router.register("GET", "/products", (ctx) => controller.getProducts(ctx));
-router.register("GET", "/products/:id", (ctx) =>
-  controller.getProductById(ctx)
-);
-
+// setup server
 const server = new HttpServer(router);
-server.registerService("ProductRepository", repo);
-server.registerService("ProductService", service);
 
-server.use(logger);
-server.use(jsonBodyParser);
-
-server.listen(PORT);
+server.listen(3000);
