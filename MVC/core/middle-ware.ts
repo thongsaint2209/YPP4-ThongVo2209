@@ -1,4 +1,4 @@
-import { HttpContext } from "./HttpContext";
+import { HttpContext } from "./http-context";
 
 export type Middleware = (
   ctx: HttpContext,

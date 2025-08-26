@@ -27,3 +27,10 @@ export class StatusResult implements IActionResult {
 // Helpers
 export const Ok = (data: any) => new JsonResult(data, 200);
 export const NotFound = () => new StatusResult(404, "Not Found");
+
+export const BadRequest = (message = "Bad Request") => ({
+  execute: (res: any) => {
+    res.statusCode = 400;
+    res.end(JSON.stringify({ message }));
+  },
+});
