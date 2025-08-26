@@ -1,27 +1,38 @@
-import { ProductModel, Product } from "../models/product";
-import { ProductView } from "../views/product-view";
-import { IncomingMessage, ServerResponse } from "http";
+import { HttpContext } from "../core/http-context";
+import { Ok, NotFound, BadRequest } from "../core/result";
+import { ModelBinder } from "../core/model-binder";
 
-export class ProductController {
-  constructor(private model: ProductModel, private view: ProductView) {}
-
-  listProducts(req: IncomingMessage, res: ServerResponse) {
-    const products = this.model.getAll();
-    res.end(this.view.showProducts(products));
-  }
-
-  addProduct(req: IncomingMessage, res: ServerResponse) {
-    let body = "";
-    req.on("data", (chunk) => (body += chunk));
-    req.on("end", () => {
-      try {
-        const product: Product = JSON.parse(body);
-        this.model.add(product);
-        res.end(this.view.showMessage("Product added successfully"));
-      } catch (err) {
-        res.statusCode = 400;
-        res.end(this.view.showMessage("Invalid product data"));
-      }
-    });
-  }
+interface Product {
+  id: number;
+  name: string;
+  price: number;
 }
+
+// Mock data (sau này thay bằng DB)
+const products: Product[] = [
+  { id: 1, name: "Laptop", price: 1000 },
+  { id: 2, name: "Mouse", price: 25 },
+];
+
+export const productController = {
+  getAll: async (ctx: HttpContext) => {
+    Ok(products).execute(ctx.response);
+  },
+
+  getById: async (ctx: HttpContext, params?: string[]) => {
+    const id = Number(params?.[0]);
+    const product = products.find((p) => p.id === id);
+    if (product) Ok(product).execute(ctx.response);
+    else NotFound().execute(ctx.response);
+  },
+
+  create: async (ctx: HttpContext) => {
+    const newProduct = await ModelBinder.bindBody<Product>(ctx.request);
+    if (!newProduct) {
+      return BadRequest("Invalid JSON").execute(ctx.response);
+    }
+    newProduct.id = products.length + 1;
+    products.push(newProduct);
+    Ok(newProduct).execute(ctx.response);
+  },
+};

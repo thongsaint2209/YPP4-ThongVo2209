@@ -1,6 +1,6 @@
 import { createServer, IncomingMessage, ServerResponse } from "http";
-import { HttpContext } from "./HttpContext";
-import { Middleware } from "./Middleware";
+import { HttpContext } from "./http-context";
+import { Middleware } from "./middle-ware";
 
 export class HttpServer {
   private middlewares: Middleware[] = [];

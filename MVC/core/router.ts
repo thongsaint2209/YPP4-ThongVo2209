@@ -1,40 +1,49 @@
-import { HttpContext } from "./HttpContext";
+// app.router.ts
+export interface Request {
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+  path: string;
+  params?: Record<string, any>;
+  body?: any;
+}
 
-type Handler = (ctx: HttpContext, params?: string[]) => Promise<void> | void;
+type Handler = (req: Request) => Promise<any>;
 
-interface Route {
+interface RouteDef {
   method: string;
-  path: string | RegExp;
+  pattern: string;
   handler: Handler;
 }
 
-export class Router {
-  private routes: Route[] = [];
+export class AppRouter {
+  private routes: RouteDef[] = [];
 
-  addRoute(method: string, path: string | RegExp, handler: Handler) {
-    this.routes.push({ method: method.toUpperCase(), path, handler });
+  public addRoute(method: string, pattern: string, handler: Handler) {
+    this.routes.push({ method, pattern, handler });
   }
 
-  async handle(ctx: HttpContext) {
-    const method = ctx.request.method || "";
-    const url = ctx.request.url || "";
+  async handleRequest(req: Request): Promise<any> {
+    // Tách path base và query string thủ công
+    const [pathOnly, queryString] = req.path.split("?");
 
-    const route = this.routes.find((r) => {
-      if (r.method !== method) return false;
-      if (typeof r.path === "string") return r.path === url;
-      if (r.path instanceof RegExp) return r.path.test(url);
-      return false;
+    // parse query string
+    const queryParams: Record<string, string> = {};
+
+    queryString?.split("&").forEach((pair) => {
+      const [key, value] = pair.split("=");
+      if (key) queryParams[key] = value;
     });
 
-    if (route) {
-      const params =
-        route.path instanceof RegExp
-          ? url.match(route.path)?.slice(1)
-          : undefined;
-      return route.handler(ctx, params);
+    req.params = queryParams;
+
+    // tìm route theo method + path base
+    const route = this.routes.find(
+      (r) => r.method === req.method && r.pattern === pathOnly
+    );
+
+    if (!route) {
+      throw new Error(`Route not found: [${req.method}] ${req.path}`);
     }
 
-    ctx.response.statusCode = 404;
-    ctx.response.end(JSON.stringify({ error: "Not Found" }));
+    return route.handler(req);
   }
 }
