@@ -19,20 +19,17 @@ export class BoardController {
   getRecentlyBoardsByUser(userId: number): Promise<RecentlyBoardDto[]> {
     return this.boardService.getRecentlyBoardsByUser(userId);
   }
-  @Get('getBoardsUserIsMember')
-  getBoardsWhereUserIsMemberOfWorkspace(
+  @Get('getBoardsMember')
+  getBoardsMember(
     userId: number,
     workspaceId: number,
   ): Promise<RecentlyBoardDto[]> {
-    return this.boardService.getBoardsWhereUserIsMemberOfWorkspace(
-      userId,
-      workspaceId,
-    );
+    return this.boardService.getBoardsMember(userId, workspaceId);
   }
 
-  @Get('getOwnerBoards')
-  getOwnerBoards(userId: number, workspaceId: number): Promise<BoardUserDto[]> {
-    return this.boardService.getOwnerBoards(userId, workspaceId);
+  @Get('getBoardsOwner')
+  getBoardsOwner(userId: number, workspaceId: number): Promise<BoardUserDto[]> {
+    return this.boardService.getBoardsOwner(userId, workspaceId);
   }
   @Get('getStagesofBoard')
   getStagesofBoard(

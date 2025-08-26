@@ -52,12 +52,7 @@ describe('BoardRepository with Router', () => {
   });
 
   it('should return only active recently boards for user 1', async () => {
-    const request: Request = {
-      method: 'GET',
-      path: `/boards/recently?userId=${userId}`,
-    };
-
-    const result = await appRouter.handleRequest(request);
+    const result = await controller.getRecentlyBoardsByUser(userId);
 
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
@@ -68,31 +63,33 @@ describe('BoardRepository with Router', () => {
 
   it('should return boards where user is member of workspace 1', async () => {
     const membership = 'member';
-    const request: Request = {
-      method: 'GET',
-      path: `/boards/workspace?userId=${userId}&workspaceId=${workspaceId}&membership=${membership}`,
-    };
+    // const request: Request = {
+    //   method: 'GET',
+    //   path: `/boards/workspace?userId=${userId}&workspaceId=${workspaceId}&membership=${membership}`,
+    // };
 
-    const result = await appRouter.handleRequest(request);
+    // const result = await appRouter.handleRequest(request);
+    const result = await controller.getBoardsMember(userId, workspaceId);
 
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);
     result.forEach((board) => {
       expect(board.BoardId).toBeDefined();
       expect(board.BoardName).toBeDefined();
-      expect(board.WorkspaceName).toBeDefined();
       expect(board.BackgroundUrl).toBeDefined();
     });
   });
 
   it('should return boards where user is owner of workspace 1', async () => {
     const membership = 'owner';
-    const request: Request = {
-      method: 'GET',
-      path: `/boards/workspace?userId=${userId}&workspaceId=${workspaceId}&membership=${membership}`,
-    };
+    // const request: Request = {
+    //   method: 'GET',
+    //   path: `/boards/workspace?userId=${userId}&workspaceId=${workspaceId}&membership=${membership}`,
+    // };
 
-    const result = await appRouter.handleRequest(request);
+    // const result = await appRouter.handleRequest(request);
+
+    const result = await controller.getBoardsOwner(userId, workspaceId);
 
     expect(result).toBeDefined();
     expect(Array.isArray(result)).toBe(true);

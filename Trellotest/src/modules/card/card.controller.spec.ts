@@ -28,18 +28,28 @@ describe('CardRepository (SQLite in-memory)', () => {
   });
   const BoardId = 1;
   const CardId = 1;
+  const StageId = 1;
   const StagePoision = 1;
   //Get all card of specific stage in specific board
   it('should return get all card of specific stage in specific board', async () => {
-    const result = await controller.getCardsOfStageInBoard(
-      StagePoision,
-      BoardId,
-    );
+    const result = await controller.getCardsStage(StagePoision, BoardId);
     console.log(result);
     expect(result).toBeDefined();
     expect(result).not.toBeNull();
 
     expect(result.length).toBe(2);
+  });
+
+  afterAll(async () => {
+    await module.close();
+  });
+
+  //Get infor card
+  it('should return get infor card', async () => {
+    const result = await controller.getCardsInfor(CardId, StageId, BoardId);
+    console.log(result);
+    expect(result).toBeDefined();
+    expect(result).not.toBeNull();
   });
 
   afterAll(async () => {

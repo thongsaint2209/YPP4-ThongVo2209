@@ -7,11 +7,17 @@ import { CardDto } from './dto/card.dto';
 export class CardController {
   constructor(private readonly CardService: CardService) {}
 
-  @Get('getCardsOfStageInBoard')
-  getCardsOfStageInBoard(
-    StagePoision: number,
+  @Get('getCardsStage')
+  getCardsStage(StagePoision: number, BoardId: number): Promise<CardDto[]> {
+    return this.CardService.getCardsStage(StagePoision, BoardId);
+  }
+
+  @Get('getCardsInfor')
+  getCardsInfor(
+    CardId: number,
+    StageId: number,
     BoardId: number,
   ): Promise<CardDto[]> {
-    return this.CardService.getCardsOfStageInBoard(StagePoision, BoardId);
+    return this.CardService.getCardsInfor(CardId, StageId, BoardId);
   }
 }

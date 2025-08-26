@@ -7,8 +7,8 @@ import { AvatarMemberDto } from './dto/avatar-member.dto';
 export class MemberController {
   constructor(private readonly memberService: MemberService) {}
 
-  @Get('getAvatarMembersOfBoard')
-  getAvatarMembersOfBoard(BoardId: number): Promise<AvatarMemberDto[]> {
-    return this.memberService.getAvatarMembersOfBoard(BoardId);
+  @Get('getAvatarBoardMembers')
+  getAvatarBoardMembers(BoardId: number): Promise<AvatarMemberDto[]> {
+    return this.memberService.getAvatarBoardMembers(BoardId);
   }
 }

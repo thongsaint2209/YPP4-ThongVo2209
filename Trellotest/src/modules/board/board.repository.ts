@@ -20,18 +20,21 @@ export class BoardRepository {
     const cacheKey = `starredBoards:${userId}}`; // Cache sẽ lưu theo key này
 
     const sql = `
-      SELECT
-        usb.UserId,
-        brd.Id AS BoardId,
-        brd.BackgroundUrl,
-        brd.BoardName,
-        brd.BoardStatus,
-        usb.StarredBoardsStatus
-      FROM UserStarredBoard usb 
-      JOIN Board brd ON brd.Id = usb.BoardId
-      WHERE usb.UserId = ?
-        AND brd.BoardStatus = 'active'
-      ORDER BY usb.CreatedAt DESC
+          SELECT 
+            usb.UserId, 
+            brd.Id BoardId, 
+            brd.BackgroundUrl, 
+            brd.BoardName, 
+            brd.BoardStatus,
+            usb.StarredBoardsStatus
+          FROM 
+            UserStarredBoard usb 
+            JOIN Board brd ON brd.Id = usb.BoardId 
+          WHERE 
+            usb.UserId = ?
+            AND brd.BoardStatus = 'active' 
+            AND usb.StarredBoardsStatus = 1 
+          ORDER BY usb.CreatedAt DESC;
   `;
 
     // Truyền callback để query nếu cache hết hạn
@@ -51,10 +54,12 @@ export class BoardRepository {
         brd.BackgroundUrl,
         uvh.AccessedAt,
         brd.BoardStatus
-      FROM UserViewHistory uvh
+      FROM 
+        UserViewHistory uvh
       JOIN Board brd ON brd.Id = uvh.OwnerId
       JOIN OwnerType owt ON owt.Id = uvh.OwnerTypeId
-      WHERE uvh.UserId = ?
+      WHERE 
+        uvh.UserId = ?
         AND owt.OwnerTypeValue = 'BOARD'
         AND brd.BoardStatus = 'active'
       ORDER BY uvh.AccessedAt DESC
@@ -64,7 +69,7 @@ export class BoardRepository {
     return this.boardRepository.query(sql, [userId]);
   }
 
-  async getBoardsWhereUserIsMemberOfWorkspace(
+  async getBoardsMember(
     userId: number,
     workspaceId: number,
   ): Promise<RecentlyBoardDto[]> {
@@ -75,12 +80,14 @@ export class BoardRepository {
         brd.BoardName AS BoardName,
         wsp.WorkspaceName AS WorkspaceName,
         brd.BackgroundUrl
-      FROM Board brd
+      FROM 
+        Board brd
       JOIN Members mbr ON mbr.OwnerId = brd.Id
       JOIN OwnerType owt ON owt.Id = mbr.OwnerTypeId
       JOIN Workspace wsp ON brd.WorkspaceId = wsp.Id
       JOIN Users usr ON mbr.UserId = usr.Id
-      WHERE usr.Id = ? AND owt.OwnerTypeValue = 'BOARD' AND wsp.Id = ?
+      WHERE 
+        usr.Id = ? AND owt.OwnerTypeValue = 'BOARD' AND wsp.Id = ?
       ORDER BY brd.CreatedAt;
   `;
     return this.cacheService.queryWithCache(
@@ -90,7 +97,7 @@ export class BoardRepository {
     );
   }
 
-  async getOwnerBoards(
+  async getBoardsOwner(
     userId: number,
     workspaceId: number,
   ): Promise<BoardUserDto[]> {
@@ -104,11 +111,16 @@ export class BoardRepository {
       wsp.WorkspaceName,
       brd.CreatedBy,
       brd.CreatedAt
-    FROM Board brd
+    FROM 
+      Board brd
     JOIN Members meb ON meb.OwnerId = brd.Id
     JOIN Workspace wsp ON wsp.Id = brd.WorkspaceId
     JOIN OwnerType owt ON owt.Id = meb.OwnerTypeId
-    WHERE owt.OwnerTypeValue = 'BOARD' AND brd.CreatedBy = meb.UserId AND meb.UserId = ? AND wsp.Id = ?
+    WHERE 
+      owt.OwnerTypeValue = 'BOARD' 
+      AND brd.CreatedBy = meb.UserId 
+      AND meb.UserId = ? 
+      AND wsp.Id = ?
     ORDER BY brd.CreatedAt
   `;
     return this.cacheService.queryWithCache(
@@ -126,10 +138,12 @@ export class BoardRepository {
       stg.Title AS StageTitle,
       stg.Position,
       clr.ColorName
-    FROM Stage stg
+    FROM 
+      Stage stg
     JOIN Board brd ON brd.Id = stg.BoardId
     JOIN Color clr ON clr.Id = stg.ColorId
-    WHERE brd.Id = ?
+    WHERE 
+      brd.Id = ?
     ORDER BY stg.Position
   `;
     return this.boardRepository.query(sql, [boardId]);

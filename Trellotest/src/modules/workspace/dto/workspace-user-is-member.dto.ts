@@ -1,4 +1,4 @@
-export class WorkspaceUserIsMemberDto {
+export class WorkspaceMemberDto {
   WorkspaceId: number;
   WorkspaceName: string;
   LogoUrl: string;

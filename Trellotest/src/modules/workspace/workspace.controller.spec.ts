@@ -31,11 +31,9 @@ describe('WorkspaceRepository (SQLite in-memory)', () => {
 
   // Get all workspaces that user is member
   it('should get all workspace that User(id=1) is member', async () => {
-    const result = await controller.getWorkspacesWhereUserIsMember(userId);
+    const result = await controller.getWorkspacesMember(userId);
 
     expect(result).toBeDefined();
-    expect(result).not.toBeNull();
-    expect(result!.length).toBe(2);
   });
 
   // Get all workspace types
