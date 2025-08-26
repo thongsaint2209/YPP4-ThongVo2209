@@ -1,53 +1,46 @@
-import type { HttpContext } from "./http-context.ts";
-import { NotFound, View } from "./view";
+import { HttpContext } from "./http-context";
+import { Request } from "../common/request";
 
-export type Handler = (ctx: HttpContext) => Promise<View>;
+export type Handler = (ctx: HttpContext) => void;
 
 interface Route {
-  path: string;
   method: string;
+  path: string;
   handler: Handler;
-  paramNames: string[];
-  regex: RegExp;
 }
 
 export class Router {
   private routes: Route[] = [];
 
-  register(method: string, path: string, handler: Handler) {
-    const paramNames: string[] = [];
-    // Convert :param to regex capture groups
-    const regexPath = path.replace(/:([^\/]+)/g, (_, key) => {
-      paramNames.push(key);
-      return "([^/]+)";
-    });
-    const regex = new RegExp(`^${regexPath}$`);
-
-    this.routes.push({
-      method: method.toUpperCase(),
-      path,
-      handler,
-      paramNames,
-      regex,
-    });
+  // đăng ký route
+  addRoute(method: string, pattern: string, handler: Handler) {
+    this.routes.push({ method, pattern, handler });
   }
 
-  async handle(ctx: HttpContext): Promise<View> {
-    const { method, url } = ctx.request;
-    const route = this.routes.find(
-      (r) => r.method === method?.toUpperCase() && r.regex.test(url ?? "")
-    );
+  // xử lý request
+  async handleRequest(req: Request): Promise<any> {
+    // tách path base và query string
+    const [pathOnly, queryString] = req.path.split("?");
 
-    if (!route) return new NotFound("Route not found");
-
-    // Extract params
-    const matches = route.regex.exec(url!)!;
-    ctx.state.params = {};
-    route.paramNames.forEach((name, i) => {
-      ctx.state.params[name] = matches[i + 1];
+    // parse query string -> gán vào req.params
+    const queryParams: Record<string, string> = {};
+    queryString?.split("&").forEach((pair) => {
+      const [key, value] = pair.split("=");
+      if (key) queryParams[key] = decodeURIComponent(value);
     });
 
-    // Call the handler
-    return route.handler(ctx);
+    req.params = { ...(req.params || {}), ...queryParams };
+
+    // tìm route match
+    const route = this.routes.find(
+      (r) => r.method === req.method && r.pattern === pathOnly
+    );
+
+    if (!route) {
+      throw new Error(`Route not found: [${req.method}] ${req.path}`);
+    }
+
+    // gọi handler
+    return route.handler(req);
   }
 }

@@ -14,7 +14,7 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
 
-    "types": ["node"], // tells TS to include Node built-in types
+    "types": ["jest", "node"], // tells TS to include Node built-in types
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
