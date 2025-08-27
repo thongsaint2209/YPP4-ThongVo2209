@@ -1,46 +1,23 @@
 import { HttpContext } from "./http-context";
-import { Request } from "../common/request";
 
 export type Handler = (ctx: HttpContext) => void;
 
-interface Route {
-  method: string;
-  path: string;
-  handler: Handler;
-}
-
 export class Router {
-  private routes: Route[] = [];
+  private routes = new Map<string, Handler>();
 
-  // đăng ký route
-  addRoute(method: string, pattern: string, handler: Handler) {
-    this.routes.push({ method, pattern, handler });
+  private createKey(method: string, path: string): string {
+    return `${method.toUpperCase()}:${path}`;
   }
 
-  // xử lý request
-  async handleRequest(req: Request): Promise<any> {
-    // tách path base và query string
-    const [pathOnly, queryString] = req.path.split("?");
+  register(method: string, path: string, handler: Handler) {
+    const key = this.createKey(method, path);
+    this.routes.set(key, handler);
+  }
 
-    // parse query string -> gán vào req.params
-    const queryParams: Record<string, string> = {};
-    queryString?.split("&").forEach((pair) => {
-      const [key, value] = pair.split("=");
-      if (key) queryParams[key] = decodeURIComponent(value);
-    });
-
-    req.params = { ...(req.params || {}), ...queryParams };
-
-    // tìm route match
-    const route = this.routes.find(
-      (r) => r.method === req.method && r.pattern === pathOnly
-    );
-
-    if (!route) {
-      throw new Error(`Route not found: [${req.method}] ${req.path}`);
-    }
-
-    // gọi handler
-    return route.handler(req);
+  match(ctx: HttpContext): Handler | null {
+    const method = ctx.req.method?.toUpperCase() || "GET";
+    const path = ctx.req.url?.split("?")[0] || "/";
+    const key = this.createKey(method, path);
+    return this.routes.get(key) || null;
   }
 }

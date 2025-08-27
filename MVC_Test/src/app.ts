@@ -8,6 +8,7 @@ import { UserRepository } from "./repositories/user-repository";
 const userRepo = new UserRepository();
 const userService = new UserService(userRepo);
 const userController = new UserController(userService);
+const PORT = 3000;
 
 // setup router
 const router = new Router();
@@ -16,4 +17,4 @@ router.register("GET", "/user/name", (ctx) => userController.getUser(ctx));
 // setup server
 const server = new HttpServer(router);
 
-server.listen(3000);
+server.listen(PORT);
