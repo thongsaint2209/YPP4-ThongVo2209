@@ -5,13 +5,12 @@ import { View } from "../server/view";
 export class UserController {
   constructor(private userService: UserService) {}
 
-  // Controller method chuẩn, chỉ định template và data
   getUser(ctx: HttpContext) {
     const { userId = "", name = "" } = ctx.query;
     const user = this.userService.getUser(userId, name);
 
     // Dynamic view name
-    const template = "user"; // tên file HTML (user.html)
+    const template = "user"; // (user.html)
 
     // Dynamic data object
     const data = user

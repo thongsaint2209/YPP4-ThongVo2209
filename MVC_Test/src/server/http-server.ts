@@ -12,7 +12,7 @@ export class HttpServer {
       try {
         const handler = this.router.match(ctx);
         if (handler) {
-          handler(ctx); // gọi controller trực tiếp
+          handler(ctx); // call controller
         } else {
           res.writeHead(404, { "Content-Type": "text/plain" });
           res.end("Not Found");
