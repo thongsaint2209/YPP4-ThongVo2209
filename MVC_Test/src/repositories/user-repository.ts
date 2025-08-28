@@ -1,20 +1,14 @@
-import { IUser } from "../model/user";
+import { UserDTO } from "../model/user";
 
 export class UserRepository {
-  private users: IUser[] = [
-    { userId: "1", name: "Alice", age: 25 },
-    { userId: "2", name: "Bob", age: 30 },
+  private users: UserDTO[] = [
+    { userId: 1, name: "Alice", age: 25 },
+    { userId: 2, name: "Bob", age: 30 },
   ];
 
-  getInfo(
-    userId: string,
-    name: string
-  ): { userId: string; name: string } | undefined {
-    if (!userId || !name) return undefined;
+  getUserbyId(userId: number): UserDTO | undefined {
+    if (!userId) return undefined;
 
-    const user = this.users.find((u) => u.userId === userId && u.name === name);
-    if (!user) return undefined;
-
-    return { userId: user.userId, name: user.name };
+    return this.users.find((u) => u.userId === userId);
   }
 }
