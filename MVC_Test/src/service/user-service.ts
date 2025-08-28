@@ -1,10 +1,10 @@
 import { UserRepository } from "../repositories/user-repository";
-import { IUser } from "../model/user";
+import { UserDTO } from "../model/user";
 
 export class UserService {
   constructor(private userRepo: UserRepository) {}
 
-  getUser(userId: string, name: string): IUser | undefined {
-    return this.userRepo.getInfo(userId, name);
+  getUserbyId(userId: number): UserDTO | undefined {
+    return this.userRepo.getUserbyId(userId);
   }
 }
